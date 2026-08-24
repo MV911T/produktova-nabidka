@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+
+# stažené stránky a výstupy běhů
+*.html
+data/
+nabidka.json
+doplnky*.json
+lauf*.json
+*.err
