@@ -13,6 +13,7 @@ from __future__ import annotations
 import html
 import json
 import re
+import sys
 import time
 
 import requests
@@ -272,11 +273,11 @@ def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
             try:
                 stranka = _stahni(url_produktu)
             except requests.RequestException as chyba:
-                print(f"  ! nestaženo {url_produktu}: {chyba}")
+                print(f"  ! nestaženo {url_produktu}: {chyba}", file=sys.stderr)
                 continue
 
             if not je_produktova_stranka(stranka):
-                print(f"  ! produkt už neexistuje: {url_produktu}")
+                print(f"  ! produkt už neexistuje: {url_produktu}", file=sys.stderr)
                 continue
 
             produkt = parsuj_produkt(stranka, nazev)
@@ -292,8 +293,6 @@ def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
 
 
 if __name__ == "__main__":
-    import sys
-
     vstup = sys.argv[1:] or ["https://www.brainmarket.cz/lauf/"]
     vysledek = ziskej_nabidku(vstup)
     print(json.dumps(vysledek, ensure_ascii=False, indent=2))
