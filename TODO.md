@@ -1,6 +1,6 @@
 # TODO
 
-**13 hotovo · 6 zbývá · 4 otevřené otázky**
+**10 zbývá · 14 hotovo · 3 vyřazeno**
 
 Poslední změna: 24. 8. 2026
 
@@ -47,53 +47,51 @@ přidá další sady, heuristika je nemusí zachytit.
 Zapsaný je, příkaz otestovaný, ale nevystřelil — Claude Code načítá hooky
 při startu session. Otevřít jednou `/hooks` nebo restartovat.
 
+### Otevřené otázky
+
+**7. Psyllium — semena vs. slupky**
+On-hold tvrzení „normální funkce trávicího traktu a střev“ (ID 2510) je
+vedené pro *semena* jitrocele. Náš produkt je z *slupek*. Použili jsme ho.
+
+**8. Ašvaganda Sensoril® — kořen vs. list**
+On-hold „duševní zdraví, stres & spánek“ je vázané na *kořen*. Sensoril®
+se vyrábí z kořene i listů, stránka to neupřesňuje.
+
+**9. Seznam symptomů je vlastní**
+`tvrzeni.SYMPTOMY` (křeče, nespavost, nedostatek…) ve Vodítkách není —
+příloha 5 obsahuje nemoci, ne symptomy. Bude potřeba ho doplňovat.
+
+**10. Kontrola má falešné poplachy i mezery**
+Párování na podřetězec bylo nahrazeno tokenovým s českými koncovkami,
+ale přesnost je omezená. Nástroj posouzení člověkem nenahrazuje.
+
 ---
 
 ## Hotovo
 
 ### Sběr dat
 
-**7.** Parsování pěti polí z produktové stránky — microdata + `.p-short-description`
-**8.** Sběr URL z výpisu kategorie včetně stránkování (`/strana-N/`)
-**9.** `category` z nadpisu výpisu — na produktu spolehlivá není
-**10.** Přeskakování zrušených produktů — web je přesměruje na kategorii
-**11.** Rozpoznání a vyřazení balíčků — tři signály plus ruční seznam
-**12.** Běh na kategorii doplňků stravy — 364 produktů, 0 prázdných polí
+**11.** Parsování pěti polí z produktové stránky — microdata + `.p-short-description`
+**12.** Sběr URL z výpisu kategorie včetně stránkování (`/strana-N/`)
+**13.** `category` z nadpisu výpisu — na produktu spolehlivá není
+**14.** Přeskakování zrušených produktů — web je přesměruje na kategorii
+**15.** Rozpoznání a vyřazení balíčků — tři signály plus ruční seznam
+**16.** Běh na kategorii doplňků stravy — 364 produktů, 0 prázdných polí
 
 ### Popisy a legislativa
 
-**13.** 14 vlastních popisů pro produkty, u nichž e-shop krátký popis nemá
-**14.** Kontrola tvrzení proti Vodítkům SZPI 2024 — tři vrstvy:
+**17.** 14 vlastních popisů pro produkty, u nichž e-shop krátký popis nemá
+**18.** Kontrola tvrzení proti Vodítkům SZPI 2024 — tři vrstvy:
 riziková léčebná slova, zesilující slovesa, zdravotní téma bez opory
-**15.** Vyhledávač schválených a on-hold tvrzení podle látky
+**19.** Vyhledávač schválených a on-hold tvrzení podle látky
 
 ### Projekt
 
-**16.** Repozitář na GitHubu — [MV911T/produktova-nabidka](https://github.com/MV911T/produktova-nabidka)
-**17.** Hlášky na stderr místo do JSON výstupu
-**18.** Hook, který tenhle seznam vypíše po každé změně souboru v projektu
-**19.** Rozdělení do modulů, `pyproject.toml`, CLI, GitHub Actions
-**20.** 44 testů bez přístupu na síť, `ruff` bez nálezů
-
----
-
-## Otevřené otázky
-
-**21. Psyllium — semena vs. slupky**
-On-hold tvrzení „normální funkce trávicího traktu a střev“ (ID 2510) je
-vedené pro *semena* jitrocele. Náš produkt je z *slupek*. Použili jsme ho.
-
-**22. Ašvaganda Sensoril® — kořen vs. list**
-On-hold „duševní zdraví, stres & spánek“ je vázané na *kořen*. Sensoril®
-se vyrábí z kořene i listů, stránka to neupřesňuje.
-
-**23. Seznam symptomů je vlastní**
-`tvrzeni.SYMPTOMY` (křeče, nespavost, nedostatek…) ve Vodítkách není —
-příloha 5 obsahuje nemoci, ne symptomy. Bude potřeba ho doplňovat.
-
-**24. Kontrola má falešné poplachy i mezery**
-Párování na podřetězec bylo nahrazeno tokenovým s českými koncovkami,
-ale přesnost je omezená. Nástroj posouzení člověkem nenahrazuje.
+**20.** Repozitář na GitHubu — [MV911T/produktova-nabidka](https://github.com/MV911T/produktova-nabidka)
+**21.** Hlášky na stderr místo do JSON výstupu
+**22.** Hook, který tenhle seznam vypíše po každé změně souboru v projektu
+**23.** Rozdělení do modulů, `pyproject.toml`, CLI, GitHub Actions
+**24.** 44 testů bez přístupu na síť, `ruff` bez nálezů
 
 ---
 
