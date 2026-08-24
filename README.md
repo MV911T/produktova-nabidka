@@ -1,17 +1,18 @@
 # Produktová nabídka
 
+[![testy](https://github.com/MV911T/produktova-nabidka/actions/workflows/testy.yml/badge.svg)](https://github.com/MV911T/produktova-nabidka/actions/workflows/testy.yml)
+
 Stáhne produkty z vybraných kategorií brainmarket.cz a vrátí je jako `list[dict]`
-připravený k převodu do JSON.
+připravený k převodu do JSON. Součástí je kontrola krátkých popisů proti
+Vodítkům SZPI k zdravotním a výživovým tvrzením.
 
-## Pole
+## Instalace
 
-| Pole | Zdroj |
-|---|---|
-| `product_name` | poslední prvek drobečkové navigace (bez podtitulků) |
-| `product_url` | microdata `url` |
-| `short_description` | blok `.p-short-description`, jinak vlastní popis z `popisy.json` |
-| `image_url` | microdata `image` |
-| `category` | nadpis výpisu, ze kterého se produkt stahoval |
+```bash
+pip install -e .
+```
+
+Jedinou závislostí je `requests`, zbytek je standardní knihovna.
 
 ## Použití
 
@@ -24,53 +25,104 @@ produkty = ziskej_nabidku([
 ])
 ```
 
-Nebo z příkazové řádky:
+Z příkazové řádky:
 
 ```bash
-python3 nabidka.py https://www.brainmarket.cz/lauf/ > nabidka.json
+nabidka https://www.brainmarket.cz/lauf/ > nabidka.json
+
+nabidka --kontrola "text popisu" --latka hořčík
+nabidka --tvrzeni hořčík psyllium
 ```
 
-Vyžaduje `requests`, zbytek je standardní knihovna.
+Průběžné hlášky jdou na stderr, na stdout je čistý JSON.
 
-## Co skript vyřazuje
+## Pole
 
-- **Zrušené produkty** – web je přesměruje na kategorii, produktová data pak
-  na stránce chybí.
-- **Balíčky a sady** – e-shop je nijak neoznačuje, proto se rozpoznávají třemi
-  nezávislými signály: klíčové slovo v názvu, dva produkty s vlastním balením
-  v názvu, a věta „Tento balíček…“ na stránce. Co těmto signálům unikne, je
-  v ručně odsouhlaseném seznamu `balicky_rucne.json`.
+| Pole | Zdroj |
+|---|---|
+| `product_name` | poslední prvek drobečkové navigace |
+| `product_url` | microdata `url` |
+| `short_description` | blok `.p-short-description`, jinak vlastní popis |
+| `image_url` | microdata `image` |
+| `category` | nadpis výpisu, ze kterého se produkt stahoval |
 
-## Proč `category` nepochází z produktu
+## Rozvržení
 
-Zhruba třetina produktů má drobečkovou navigaci jen dvouúrovňovou
-(`BrainMax® > Název produktu`) – věcnou kategorii web u nich vůbec nevede.
-Kategorie se proto bere z nadpisu výpisu, ze kterého se produkt stahoval.
+```
+src/nabidka/
+├── __init__.py     ziskej_nabidku() – hlavní vstupní bod
+├── stahovani.py    HTTP a práce s HTML
+├── katalog.py      výpisy kategorií a stránkování
+├── produkt.py      parsování pěti polí
+├── balicky.py      rozpoznání sad
+├── tvrzeni.py      kontrola proti Vodítkům SZPI
+├── cli.py          příkazová řádka
+└── data/           JSON zdroje
+tests/              44 testů, bez přístupu na síť
+```
 
-## Vlastní popisy
+## Na co narazíte v datech
 
-Část produktů nemá na webu krátký popis. Pro ty jsou v `popisy.json` ručně
-napsané texty. Všechny prošly kontrolou v `kontrola.py`.
+**Kategorie není na produktu.** Zhruba třetina produktů má drobečkovou navigaci
+jen dvouúrovňovou (`BrainMax® > Název produktu`) – věcnou kategorii web u nich
+vůbec nevede. Proto se bere z nadpisu výpisu, ze kterého se produkt stahoval.
+
+**Název produktu je slepený.** `itemprop="name"` obsahuje název, podtitulek
+a u variant i nadpisy zákaznických dotazů. Čistý název je posledním prvkem
+drobečkové navigace.
+
+**Krátký popis není v microdata.** Je jen v HTML bloku `.p-short-description`,
+a bývá do něj přimíchané provozní sdělení („Vážení zákazníci, upozorňujeme…“),
+které se odstraňuje.
+
+**Zrušené produkty visí ve výpisu.** Web na jejich URL vrátí přesměrování
+na kategorii. Poznají se podle chybějících microdata produktu.
+
+**Balíčky nejsou nijak označené.** V Shoptetu jsou vedené jako běžný produkt.
+Rozpoznávají se třemi signály – klíčové slovo v názvu, dva produkty s vlastním
+balením v názvu, věta „Tento balíček…“ na stránce – a co jim unikne, je
+v ručně odsouhlaseném `data/balicky_rucne.json`.
+
+Znak `+` v názvu má přitom dva významy: složení jedné receptury
+(*Hořčík + Vitamín B6*) versus dva samostatné produkty
+(*Sleep Magnesium + BrainMax Glycin*).
 
 ## Kontrola zdravotních tvrzení
 
-`kontrola.py` prověřuje popis proti Vodítkům SZPI 2024 ve třech vrstvách:
+Podle čl. 10 nařízení (ES) č. 1924/2006 musí být každé tvrzení spojující
+potravinu se zdravím na schváleném seznamu. Modul `tvrzeni` hlásí:
 
-1. **riziková (léčebná) slova** – příloha 5
+1. **riziková (léčebná) slova** – příloha 5 Vodítek
 2. **zesilující slovesa** – formulace silnější než schválené znění, příloha 6
 3. **zdravotní téma bez opory** – věta se dotýká zdraví, ale neodpovídá
    žádnému schválenému, on-hold ani výživovému tvrzení
 
-```bash
-python3 kontrola.py "text popisu" hořčík
-python3 tvrzeni.py hořčík psyllium     # jaká tvrzení jsou pro látku dostupná
+```python
+from nabidka import tvrzeni_pro, zkontroluj
+
+zkontroluj("Hořčík posiluje svaly.", ["hořčík"])
+# ['zesilující sloveso: „posiluje“ – bude silnější než schválené znění', ...]
+
+tvrzeni_pro("psyllium")["on_hold"]
+# ['Jitrocel indický ( psyllium) - semena → Normální funkce trávicího traktu a střev', ...]
 ```
 
 Zdroj dat: [Vodítka SZPI k problematice zdravotních a výživových tvrzení](https://www.szpi.gov.cz/clanek/voditka-k-problematice-zdravotnich-a-vyzivovych-tvrzeni.aspx),
-verze 2024. Přílohy jsou převedené do JSON v kořeni repozitáře.
+verze 2024, přílohy převedené do JSON v `src/nabidka/data/`.
 
 ### Omezení
 
-Seznam symptomů v `kontrola.py` (`SYMPTOMY`) je vlastní – ve Vodítkách takový
-výčet není. Nástroj kontrolu člověkem nenahrazuje, jen upozorňuje na nejčastější
+Seznam symptomů (`tvrzeni.SYMPTOMY`) je vlastní – ve Vodítkách takový výčet
+není. Nástroj posouzení člověkem nenahrazuje, jen upozorňuje na nejčastější
 prohřešky.
+
+## Vývoj
+
+```bash
+pip install -e ".[dev]"
+pytest
+ruff check .
+```
+
+Testy běží proti uloženým výřezům skutečných stránek v `tests/podklady/`,
+takže nechodí na síť.

@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "produktova-nabidka"
+version = "1.0.0"
+description = "Produktová nabídka z brainmarket.cz s kontrolou zdravotních tvrzení podle Vodítek SZPI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Matěj Veselý", email = "ai@brainmarket.cz" }]
+keywords = ["scraping", "eshop", "szpi", "zdravotni-tvrzeni"]
+
+dependencies = ["requests>=2.31"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+nabidka = "nabidka.cli:main"
+
+[project.urls]
+Repository = "https://github.com/MV911T/produktova-nabidka"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nabidka"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
