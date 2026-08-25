@@ -87,11 +87,12 @@ src/nabidka/
 ├── katalog.py      výpisy kategorií a stránkování
 ├── produkt.py      parsování pěti polí
 ├── balicky.py      rozpoznání sad
+├── sortiment.py    vyřazení oblečení a kosmetiky
 ├── tvrzeni.py      kontrola proti Vodítkům SZPI
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
 nastroje/tabule.py  přehled úkolů z TODO.md
-tests/              95 testů, bez přístupu na síť
+tests/              104 testů, bez přístupu na síť
 ```
 
 ## Na co narazíte v datech
@@ -127,6 +128,18 @@ které se odstraňuje.
 
 **Zrušené produkty visí ve výpisu.** Web na jejich URL vrátí přesměrování
 na kategorii. Poznají se podle chybějících microdata produktu.
+
+**Kategorie vedou i zboží, které se nejí.** `/brainmax-men/`,
+`/brainmax-pro-zeny/` a `/lauf/` nejsou rubriky doplňků – z 539 produktů
+ve výpisech je 91 oblečení, kosmetika nebo vybavení. Nabídka má obsahovat
+jen to, co se dává do pusy, takže se filtruje. Podle názvu to nejde:
+„Mandlový krém s kokosem“ je potravina a „Shower Gel“ ne. Rozhoduje větev,
+ve které produkt visí (`Oblečení a doplňky`, `Přírodní kosmetika`, `Domov`
+a jejich podvětve) – viz `sortiment.NEPOZIVATELNE_VETVE`.
+
+Cíle jako „Pleť, vlasy, nehty“ mezi vyřazenými schválně nejsou, tam visí
+doplňky stravy. U produktů zavěšených rovnou pod značkou žádná větev není,
+a na ty zbývá krátký výčet slov v názvu (`láhev`, `bidon`, `šejkr`).
 
 **Balíčky nejsou nijak označené.** V Shoptetu jsou vedené jako běžný produkt.
 Rozpoznávají se třemi signály – klíčové slovo v názvu, dva produkty s vlastním

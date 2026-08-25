@@ -33,7 +33,8 @@ def je_produktova_stranka(stranka: str) -> bool:
     return bool(re.search(r'itemtype="https?://schema\.org/Product"', stranka))
 
 
-def _oblast_produktu(stranka: str) -> str:
+def oblast_produktu(stranka: str) -> str:
+    """Část stránky od začátku microdat produktu – dál se v ní hledá."""
     match = re.search(r'itemtype="https?://schema\.org/Product"', stranka)
     return stranka[match.start():] if match else stranka
 
@@ -85,7 +86,7 @@ def parsuj(stranka: str, kategorie: str) -> dict[str, str]:
     `sku` příponu velikosti (`70423/XL`), takže určuje variantu; nadřazený
     produkt má microdata `productID`.
     """
-    oblast = _oblast_produktu(stranka)
+    oblast = oblast_produktu(stranka)
     cesta = drobeckova_navigace(stranka)
     url = microdata(oblast, "url")
 

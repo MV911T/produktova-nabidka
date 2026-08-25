@@ -14,6 +14,7 @@ import requests
 from .balicky import je_balicek
 from .katalog import nacti_kategorii
 from .produkt import je_produktova_stranka, parsuj
+from .sortiment import je_pozivatelne
 from .stahovani import pockej, stahni
 from .tvrzeni import tvrzeni_pro, zkontroluj
 
@@ -21,13 +22,14 @@ __all__ = [
     "ziskej_nabidku",
     "NeuplnaNabidka",
     "je_balicek",
+    "je_pozivatelne",
     "nacti_kategorii",
     "parsuj",
     "tvrzeni_pro",
     "zkontroluj",
 ]
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 
 class NeuplnaNabidka(RuntimeError):
@@ -54,7 +56,9 @@ def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
     `image_url` a `category` ze zadání, a k nim `sku` a `ean` jako stabilní
     identifikátory – URL se s přejmenováním produktu mění, kód zboží ne.
 
-    Vynechává zrušené produkty (web je přesměruje na kategorii) a balíčky.
+    Vynechává zrušené produkty (web je přesměruje na kategorii), balíčky
+    a zboží, které se nejí – kategorie mužů, žen i LAUF vedou vedle doplňků
+    také oblečení a kosmetiku.
     Průběžné hlášky jdou na stderr, aby nekazily JSON na stdout.
 
     Každý produkt je v nabídce jednou, i když na něj vede víc cest nebo
@@ -93,6 +97,9 @@ def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
             produkt = parsuj(stranka, nazev)
 
             if je_balicek(produkt["product_name"], stranka):
+                continue
+
+            if not je_pozivatelne(produkt["product_name"], stranka):
                 continue
 
             if not produkt["product_url"]:
