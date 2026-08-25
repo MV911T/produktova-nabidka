@@ -65,16 +65,25 @@ PRAH_SLOVNIKU = 2
 """Kolik slov ze zdravotního slovníku musí věta obsahovat, než se posuzuje."""
 
 VZTAHOVA = [
-    "přispívá", "přispívají", "podílí", "pomáhá", "pomáhají", "podporuje",
-    "podporují", "napomáhá", "prospívá", "působí", "udržuje", "udržují",
-    "ovlivňuje", "snižuje", "snižují", "zmírňuje", "doplňuje", "dodává",
-    "je potřebný", "je nezbytný", "má vliv", "účinek", "účinky",
+    # slovesa
+    "přispívá", "přispívají", "přispět", "podílí", "pomáhá", "pomáhají",
+    "podporuje", "podporují", "napomáhá", "napomáhají", "prospívá", "působí",
+    "udržuje", "udržují", "ovlivňuje", "snižuje", "snižují", "zmírňuje",
+    "doplňuje", "dodává", "je potřebný", "je nezbytný", "má vliv",
+    # jméno místo slovesa – „pro podporu normální hladiny cholesterolu“
+    "podpor", "ochran", "regenerac", "prospěšn",
+    "posílení", "zvýšení", "snížení", "udržení", "účinek", "účinky", "péči o",
 ]
-"""Slovesa, kterými věta spojuje látku se zdravím.
+"""Výrazy, kterými věta spojuje látku se zdravím.
 
 Zdravotní tvrzení podle čl. 2 nařízení 1924/2006 musí vztah mezi potravinou
 a zdravím vyslovit. Věta „Vysoké koncentrace glycinu se nacházejí ve svalech“
 žádný účinek netvrdí – popisuje, kde se látka v těle vyskytuje.
+
+Vyslovit ho ale nemusí sloveso. Katalog má 60 vět typu „pro podporu normální
+hladiny cholesterolu“ nebo „pro udržení energie“, které tvrzením jsou, jen je
+nesou podstatným jménem. Krátké tvary jako `podpor` nebo `ochran` jsou kmeny
+– koncovku doplní `_KONCOVKY`.
 """
 
 _KONCOVKY = {
@@ -378,12 +387,11 @@ def zkontroluj(popis: str, latky: list[str] | None = None) -> list[str]:
                 _ohlas(symptom, f"symptom mimo schválená tvrzení: „{symptom}“")
 
         for slova, zneni, duvod in _VZORY_NEPRIPUSTNYCH:
-            if all(_obsahuje(kmeny, n_veta, slovo) for slovo in slova):
-                if zneni not in ohlasene:
-                    ohlasene.add(zneni)
-                    nalezy.append(
-                        f"nepřípustné tvrzení podle Vodítek: „{zneni}“ – {duvod}"
-                    )
+            if zneni not in ohlasene and all(
+                _obsahuje(kmeny, n_veta, slovo) for slovo in slova
+            ):
+                ohlasene.add(zneni)
+                nalezy.append(f"nepřípustné tvrzení podle Vodítek: „{zneni}“ – {duvod}")
 
         # jediné slovo ze slovníku větu o zdraví nedělá – „ideální během
         # tréninku“ trefí „během“ a nic víc, proto se žádají aspoň dvě

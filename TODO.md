@@ -1,6 +1,6 @@
 # TODO
 
-**3 zbývá · 29 hotovo · 3 vyřazeno**
+**3 zbývá · 30 hotovo · 3 vyřazeno**
 
 Poslední změna: 25. 8. 2026
 
@@ -33,11 +33,11 @@ najednou a výstup uložit.
 
 ### Otevřené otázky
 
-**3. Vlastní seznamy zůstávají mezerou**
-`tvrzeni.SYMPTOMY` i `tvrzeni.VZTAHOVA` jsou naše, ve Vodítkách takové
-výčty nejsou. Oficiální nepřípustná znění se už používají (viz 32), ale
-pokrývají jen 43 vět; co Vodítka nevypisují a co nespadne pod riziková
-slova, projde. Doplňovat podle nálezů z praxe.
+**3. Seznam symptomů zůstává vlastní**
+`tvrzeni.SYMPTOMY` je náš, ve Vodítkách takový výčet není — příloha 5
+obsahuje nemoci, ne symptomy. Průchod katalogem k jeho rozšíření podklad
+nedal (jediný nález), takže se doplní až podle nálezů z praxe.
+Vztahové výrazy už rozšířené jsou (viz 33).
 
 ---
 
@@ -183,11 +183,20 @@ významová slova, protože Vodítka rozlišují věty lišící se jediným slo
 *poškozením*“ nepřípustná). Na katalogu je nálezů zatím nula, což odpovídá —
 je to síť na budoucí texty, ne na ty stávající.
 
+**33.** Vztah k účinku se pozná i bez slovesa. Brána na slovesa míjela
+věty typu „pro podporu normální hladiny cholesterolu“ nebo „Podpora
+odolnosti a fyzické výkonnosti“ — tvrzení, která vztah nesou podstatným
+jménem. Katalog jich měl 60. Do `VZTAHOVA` proto přibyly kmeny `podpor`,
+`ochran`, `regenerac` a tvary `posílení`, `zvýšení`, `udržení`, `přispět`,
+`napomáhají`. Vět k posouzení přibylo ze 111 na 154 a jsou to skutečná
+tvrzení: „podporuje pevnou pokožku, krásné vlasy a zdravé klouby“,
+„pro podporu imunity“, „chrání buňky před oxidačním stresem“.
+
 ---
 
 ## Vyřazeno ze zadání
 
-**33.** Doplňování z databáze prodspec — nahrazeno vlastními popisy
-**34.** Cloudový scraper — krátký popis je jen v HTML, JSON-LD ho nemá
-**35.** Fallback popisu z detailního textu — dával dávkování, výživové hodnoty
+**34.** Doplňování z databáze prodspec — nahrazeno vlastními popisy
+**35.** Cloudový scraper — krátký popis je jen v HTML, JSON-LD ho nemá
+**36.** Fallback popisu z detailního textu — dával dávkování, výživové hodnoty
 a doslovné „Popis produktu není dostupný“; použitelný byl 2krát z 19

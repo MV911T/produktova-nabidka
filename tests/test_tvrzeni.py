@@ -236,3 +236,26 @@ SCHVALENA_PODOBNA = [
 def test_schvalene_zneni_se_za_nepripustne_nepovazuje(popis):
     """„oxidativním stresem“ je schválené, „oxidativním poškozením“ ne."""
     assert not [n for n in zkontroluj(popis) if "nepřípustné tvrzení" in n]
+
+
+TVRZENI_JMENEM = [
+    "Kombinace 16 látek pro podporu normální funkce prostaty a močových cest.",
+    "Podpora odolnosti a fyzické výkonnosti s pomocí pokladů Ájurvédy.",
+    "Ideální volba pro každodenní vitalitu a ochranu před oxidačním stresem.",
+    "Zázvor je součástí tradičních směsí pro udržení energie během dne.",
+]
+
+
+@pytest.mark.parametrize("popis", TVRZENI_JMENEM)
+def test_tvrzeni_nesene_jmenem_se_posoudi(popis):
+    """Vztah k účinku nemusí vyslovit sloveso.
+
+    Katalog má desítky vět typu „pro podporu normální hladiny cholesterolu“.
+    Brána na slovesa je míjela, ačkoli tvrzením jsou.
+    """
+    assert zkontroluj(popis), popis
+
+
+def test_popis_slozeni_jmenem_neprojde_jako_tvrzeni():
+    """Samotné jméno bez zdravotního tématu tvrzení nedělá."""
+    assert zkontroluj("Balení obsahuje 200 ml a vystačí na 20 dávek.") == []

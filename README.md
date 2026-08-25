@@ -92,7 +92,7 @@ src/nabidka/
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
 nastroje/tabule.py  přehled úkolů z TODO.md
-tests/              111 testů, bez přístupu na síť
+tests/              116 testů, bez přístupu na síť
 ```
 
 ## Na co narazíte v datech
@@ -191,8 +191,11 @@ verze 2024, přílohy převedené do JSON v `src/nabidka/data/`.
 ### Omezení
 
 Seznam symptomů (`tvrzeni.SYMPTOMY`) je vlastní – ve Vodítkách takový výčet
-není. Stejně tak seznam vztahových sloves (`tvrzeni.VZTAHOVA`): tvrzení
-naznačené bez slovesa („Pro zdravé klouby“) nástroj minout může.
+není. Vlastní je i `tvrzeni.VZTAHOVA`, tedy výrazy, kterými věta vztah
+k účinku vyslovuje. Původně to byla jen slovesa, jenže katalog má desítky
+vět typu „pro podporu normální hladiny cholesterolu“, které tvrzením jsou
+a nesou ho podstatným jménem; ta se do seznamu doplnila. Co v seznamu není,
+kontrola k posouzení nevezme.
 
 Nepřípustná znění se hledají na shodu **všech** významových slov. Vodítka
 totiž rozlišují věty lišící se jediným slovem – „ochrana buněk před
@@ -200,7 +203,7 @@ oxidativním **stresem**“ je schválená, „před oxidativním **poškozením
 nepřípustná –, a volnější párování by ten rozdíl smazalo. Znění, které
 Vodítka nevypisují, tahle vrstva nenajde.
 
-Na 379 popisech z katalogu hlásí 111 vět bez opory, 10 zesilujících sloves,
+Na 379 popisech z katalogu hlásí 154 vět bez opory, 10 zesilujících sloves,
 5 rizikových slov, 1 symptom a žádné nepřípustné znění. Nástroj posouzení člověkem nenahrazuje,
 jen upozorňuje na nejčastější prohřešky.
 
