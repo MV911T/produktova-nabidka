@@ -1,6 +1,6 @@
 # TODO
 
-**7 zbývá · 22 hotovo · 3 vyřazeno**
+**8 zbývá · 22 hotovo · 3 vyřazeno**
 
 Poslední změna: 25. 8. 2026
 
@@ -27,13 +27,13 @@ nabidka https://www.brainmarket.cz/brainmax-men/ > muzi.json
 
 **2. Spojit výstupy všech čtyř kategorií do jedné nabídky**
 Produkt může být ve víc kategoriích zároveň — duplicity i pořadí kategorií
-už `ziskej_nabidku()` řeší (viz 27), takže stačí předat všechny čtyři URL
+už `ziskej_nabidku()` řeší (viz 28), takže stačí předat všechny čtyři URL
 najednou a výstup uložit.
 
 ### Údržba
 
 **3. Opravit texty, které kontrola označila**
-Průchod katalogem (viz 29) našel 14 nálezů u 13 produktů, které stojí za
+Průchod katalogem (viz 30) našel 14 nálezů u 13 produktů, které stojí za
 přepsání — 11× zesilující sloveso („zvyšuje“, „zlepšuje“, „posiluje“,
 „řeší“, „hraje klíčovou roli“), 2× symptom, 1× riziková formulace
 o ochraně buněk u spiruliny. Texty jsou na e-shopu, ne u nás v datech,
@@ -73,47 +73,47 @@ Totéž platí pro `tvrzeni.VZTAHOVA`: tvrzení naznačené bez slovesa
 
 ### Sběr dat
 
-**29.** Parsování pěti polí z produktové stránky — microdata + `.p-short-description`
-**29.** Sběr URL z výpisu kategorie včetně stránkování (`/strana-N/`)
-**29.** `category` z nadpisu výpisu — na produktu spolehlivá není
-**29.** Přeskakování zrušených produktů — web je přesměruje na kategorii
-**29.** Rozpoznání a vyřazení balíčků — tři signály plus ruční seznam
-**29.** Běh na kategorii doplňků stravy — 364 produktů, 0 prázdných polí
+**9.** Parsování pěti polí z produktové stránky — microdata + `.p-short-description`
+**10.** Sběr URL z výpisu kategorie včetně stránkování (`/strana-N/`)
+**11.** `category` z nadpisu výpisu — na produktu spolehlivá není
+**12.** Přeskakování zrušených produktů — web je přesměruje na kategorii
+**13.** Rozpoznání a vyřazení balíčků — tři signály plus ruční seznam
+**14.** Běh na kategorii doplňků stravy — 364 produktů, 0 prázdných polí
 
 ### Popisy a legislativa
 
-**29.** 14 vlastních popisů pro produkty, u nichž e-shop krátký popis nemá
-**29.** Kontrola tvrzení proti Vodítkům SZPI 2024 — tři vrstvy:
+**15.** 14 vlastních popisů pro produkty, u nichž e-shop krátký popis nemá
+**16.** Kontrola tvrzení proti Vodítkům SZPI 2024 — tři vrstvy (dnes čtyři, viz 26):
 riziková léčebná slova, zesilující slovesa, zdravotní téma bez opory
-**29.** Vyhledávač schválených a on-hold tvrzení podle látky
-**29.** Chybějící popisy v kategoriích muži a ženy — psát se nemusel žádný.
+**17.** Vyhledávač schválených a on-hold tvrzení podle látky
+**18.** Chybějící popisy v kategoriích muži a ženy — psát se nemusel žádný.
 Ze 137 produktů nemá e-shop krátký popis u jediného (Performance Magnesium®)
 a ten vlastní popis už má. Žádné prázdné pole, 10 balíčků vyřazeno.
 
 ### Projekt
 
-**29.** Repozitář na GitHubu — [MV911T/produktova-nabidka](https://github.com/MV911T/produktova-nabidka)
-**29.** Hlášky na stderr místo do JSON výstupu
-**29.** Rozdělení do modulů, `pyproject.toml`, CLI, GitHub Actions
-**29.** 56 testů bez přístupu na síť, `ruff` bez nálezů
-**29.** Tabule úkolů po každé iteraci — `nastroje/tabule.py` a `Stop` hook.
+**19.** Repozitář na GitHubu — [MV911T/produktova-nabidka](https://github.com/MV911T/produktova-nabidka)
+**20.** Hlášky na stderr místo do JSON výstupu
+**21.** Rozdělení do modulů, `pyproject.toml`, CLI, GitHub Actions
+**22.** 79 testů bez přístupu na síť, `ruff` bez nálezů
+**23.** Tabule úkolů po každé iteraci — `nastroje/tabule.py` a `Stop` hook.
 Předchozí hook měl natvrdo cestu na původní umístění projektu, a proto
 po přesunu nikdy nevystřelil. Nový si repozitář najde přes `git rev-parse`,
 takže přesun ani další klon už mu nevadí, a jinde než tady mlčí.
-**29.** Neúplná nabídka se pozná. Stahování opakuje pokus u výpadku spojení
+**24.** Neúplná nabídka se pozná. Stahování opakuje pokus u výpadku spojení
 a chyb 5xx (4xx ne, ta se opakováním nespraví), a co se ani napotřetí
 nestáhne, propadne jako `NeuplnaNabidka` s dosud staženými produkty
 a seznamem zbylých URL. CLI zkrácený JSON nevypíše a skončí kódem 1,
 dokud nedostane `--dovol-neuplnou`.
 
-**29.** Ašvaganda Sensoril® je z kořene **i listů** — technický list výrobce
+**25.** Ašvaganda Sensoril® je z kořene **i listů** — technický list výrobce
 (Kerry, majitel značky od převzetí Natreonu) ji vede jako „Premium Ashwagandha
 Root & Leaf Extract“ a kombinaci obou částí uvádí jako svou přednost. On-hold
 tvrzení 4194 „Duševní zdraví, stres & spánek“ je vázané na *kořen*, takže se
 o ně opřít nelze. Popis Antistres komplexu proto stojí na tvrzení 2183
 „Duševní zdraví a relaxace“, které část rostliny neomezuje.
 
-**29.** Přesnost kontroly tvrzení. Na 165 popisech z e-shopu spadly
+**26.** Přesnost kontroly tvrzení. Na 165 popisech z e-shopu spadly
 poplachy „bez opory“ z 223 na 26 a našich 14 popisů hlásí jediný nález —
 ten věcný. Tři změny: věta se posuzuje, jen když účinek vysloví (samotná
 zmínka o zdraví tvrzením není), opora musí platit pro touž látku, a když
@@ -122,12 +122,12 @@ i „Kolagen přispívá k normální funkci imunitního systému“ — opřelo
 o znění pro vitamín C, protože se shodly na slovech „přispívá“
 a „normální“.
 
-**29.** Provozní sdělení zmizí z popisu, ať končí čímkoli. Vzor žádal
+**27.** Provozní sdělení zmizí z popisu, ať končí čímkoli. Vzor žádal
 tečku, takže věta „Vážení zákazníci, vylepšili jsme složení… v aktivní
 formě!“ v datech obou balení Energy Magnesia® zůstávala. Ověřeno na živých
 stránkách i pěti testy.
 
-**29.** Každý produkt je v nabídce jednou. E-shop vede `Men Multivitamin®`
+**28.** Každý produkt je v nabídce jednou. E-shop vede `Men Multivitamin®`
 ve výpisu i jako `…-kapsli-2`; adresy se liší, shodná je až microdata `url`,
 a podle ní se teď duplicita pozná. Kategorie zůstává ta první v pořadí.
 Kategorie mužů po opravě vrací 85 produktů místo 86, bez duplicit.
@@ -139,7 +139,7 @@ produktů (13 %) chybí a zbývá značka. Navíc jde o primární zařazení, n
 oč bylo požádáno: `FUELIX DRINK` se ve výpisu doplňků stravy hlásí do „Zdravá
 výživa a potraviny pro děti“. README uvádělo třetinu, doloženo je 13 %.
 
-**29.** Celý katalog projet kontrolou tvrzení — 466 produktů ze všech čtyř
+**30.** Celý katalog projet kontrolou tvrzení — 466 produktů ze všech čtyř
 kategorií, nic nestaženo nezůstalo, žádné prázdné pole ani duplicita.
 Tvrdých nálezů 25 u 22 produktů; po ručním posouzení 14 k opravě,
 2 k posouzení, 5 mimo rozsah (kosmetika) a 4 falešné. K tomu 123 vět bez
@@ -150,7 +150,7 @@ k posouzení. Zpráva zůstává mimo repozitář, ten je veřejný.
 
 ## Vyřazeno ze zadání
 
-**29.** Doplňování z databáze prodspec — nahrazeno vlastními popisy
-**30.** Cloudový scraper — krátký popis je jen v HTML, JSON-LD ho nemá
-**31.** Fallback popisu z detailního textu — dával dávkování, výživové hodnoty
+**31.** Doplňování z databáze prodspec — nahrazeno vlastními popisy
+**32.** Cloudový scraper — krátký popis je jen v HTML, JSON-LD ho nemá
+**33.** Fallback popisu z detailního textu — dával dávkování, výživové hodnoty
 a doslovné „Popis produktu není dostupný“; použitelný byl 2krát z 19
