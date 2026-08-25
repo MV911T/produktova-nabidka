@@ -92,7 +92,7 @@ src/nabidka/
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
 nastroje/tabule.py  přehled úkolů z TODO.md
-tests/              104 testů, bez přístupu na síť
+tests/              111 testů, bez přístupu na síť
 ```
 
 ## Na co narazíte v datech
@@ -157,9 +157,11 @@ potravinu se zdravím na schváleném seznamu. Modul `tvrzeni` hlásí:
 
 1. **riziková (léčebná) slova** – příloha 5 Vodítek
 2. **zesilující slovesa** – formulace silnější než schválené znění, příloha 6
-3. **zdravotní téma bez opory** – věta účinek tvrdí, ale neodpovídá
+3. **nepřípustná znění z Vodítek** – 43 konkrétních vět, které Vodítka
+   uvádějí jako nepoužitelné, i s důvodem
+4. **zdravotní téma bez opory** – věta účinek tvrdí, ale neodpovídá
    žádnému schválenému, on-hold ani výživovému tvrzení
-4. **opora jen pro jinou část rostliny** – tvrzení je vedené pro kořen,
+5. **opora jen pro jinou část rostliny** – tvrzení je vedené pro kořen,
    semena či listy; ověřte, že je výrobek opravdu obsahuje
 
 Posuzují se jen věty, které vztah k účinku vyslovují — zmínka o zdraví
@@ -192,8 +194,14 @@ Seznam symptomů (`tvrzeni.SYMPTOMY`) je vlastní – ve Vodítkách takový vý
 není. Stejně tak seznam vztahových sloves (`tvrzeni.VZTAHOVA`): tvrzení
 naznačené bez slovesa („Pro zdravé klouby“) nástroj minout může.
 
-Na 459 popisech z katalogu hlásí 117 vět bez opory, 11 zesilujících sloves,
-7 rizikových slov a 3 symptomy. Nástroj posouzení člověkem nenahrazuje,
+Nepřípustná znění se hledají na shodu **všech** významových slov. Vodítka
+totiž rozlišují věty lišící se jediným slovem – „ochrana buněk před
+oxidativním **stresem**“ je schválená, „před oxidativním **poškozením**“
+nepřípustná –, a volnější párování by ten rozdíl smazalo. Znění, které
+Vodítka nevypisují, tahle vrstva nenajde.
+
+Na 379 popisech z katalogu hlásí 111 vět bez opory, 10 zesilujících sloves,
+5 rizikových slov, 1 symptom a žádné nepřípustné znění. Nástroj posouzení člověkem nenahrazuje,
 jen upozorňuje na nejčastější prohřešky.
 
 ## Vývoj

@@ -1,13 +1,14 @@
 """Kontrola krátkých popisů proti Vodítkům SZPI 2024.
 
 Podle čl. 10 nařízení (ES) č. 1924/2006 musí být každé tvrzení spojující
-potravinu se zdravím na schváleném seznamu. Modul hledá čtyři druhy prohřešků:
+potravinu se zdravím na schváleném seznamu. Modul hledá pět druhů prohřešků:
 
 1. riziková (léčebná) slova – příloha 5 Vodítek
 2. slovesa, která tvrzení zesilují nad schválené znění – příloha 6
-3. věty se zdravotním tématem bez opory ve schváleném, on-hold
+3. znění, která Vodítka vypisují jako nepřípustná, včetně důvodu
+4. věty se zdravotním tématem bez opory ve schváleném, on-hold
    nebo výživovém tvrzení
-4. věty, jejichž jediná opora je vedená pro jinou část rostliny,
+5. věty, jejichž jediná opora je vedená pro jinou část rostliny,
    než jakou výrobek obsahuje
 
 Posuzují se jen věty, které účinek vyslovují: samotná zmínka o zdraví
@@ -274,6 +275,35 @@ def _zdravotni_slovnik() -> set[str]:
 _SLOVNIK = _zdravotni_slovnik()
 
 
+_VYNECHAT_VE_VZORU = {
+    "díky", "jako", "např", "tedy", "tím", "této", "která", "které", "který",
+    "jehož", "jejíž", "jejichž", "jsou", "aby", "pro", "vaše", "vašich",
+    "vašeho", "vašim", "přičemž", "další", "dalšími", "například",
+}
+"""Slova, která ve vzoru nepřípustného tvrzení nenesou jeho podstatu."""
+
+
+def _vzory_nepripustnych() -> list[tuple[list[str], str, str]]:
+    """Vzory jako (významová slova, znění, důvod).
+
+    Shodovat se musí všechna slova. Vodítka totiž učí rozlišovat věty lišící
+    se jediným slovem: „ochrana buněk před oxidativním stresem“ je schválená,
+    „před oxidativním poškozením“ nepřípustná.
+    """
+    vzory = []
+    for radek in NEPRIPUSTNE:
+        slova = [
+            slovo for slovo in re.findall(r"[a-zá-ž]+", radek["nepripustne"].lower())
+            if len(slovo) > 3 and slovo not in _VYNECHAT_VE_VZORU
+        ]
+        if slova:
+            vzory.append((slova, radek["nepripustne"].strip(), radek["duvod"].strip()))
+    return vzory
+
+
+_VZORY_NEPRIPUSTNYCH = _vzory_nepripustnych()
+
+
 def _sestav_opory(latky: list[str] | None) -> list[tuple[str, str, str]]:
     """Opory jako trojice (látka, znění, část rostliny).
 
@@ -346,6 +376,14 @@ def zkontroluj(popis: str, latky: list[str] | None = None) -> list[str]:
         for symptom in SYMPTOMY:
             if _obsahuje(kmeny, n_veta, symptom):
                 _ohlas(symptom, f"symptom mimo schválená tvrzení: „{symptom}“")
+
+        for slova, zneni, duvod in _VZORY_NEPRIPUSTNYCH:
+            if all(_obsahuje(kmeny, n_veta, slovo) for slovo in slova):
+                if zneni not in ohlasene:
+                    ohlasene.add(zneni)
+                    nalezy.append(
+                        f"nepřípustné tvrzení podle Vodítek: „{zneni}“ – {duvod}"
+                    )
 
         # jediné slovo ze slovníku větu o zdraví nedělá – „ideální během
         # tréninku“ trefí „během“ a nic víc, proto se žádají aspoň dvě

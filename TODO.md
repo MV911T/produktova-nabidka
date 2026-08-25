@@ -1,6 +1,6 @@
 # TODO
 
-**3 zbývá · 28 hotovo · 3 vyřazeno**
+**3 zbývá · 29 hotovo · 3 vyřazeno**
 
 Poslední změna: 25. 8. 2026
 
@@ -30,13 +30,14 @@ Produkt může být ve víc kategoriích zároveň — duplicity i pořadí kate
 už `ziskej_nabidku()` řeší (viz 23), takže stačí předat všechny čtyři URL
 najednou a výstup uložit.
 
+
 ### Otevřené otázky
 
-**3. Seznam symptomů je vlastní**
-`tvrzeni.SYMPTOMY` (křeče, nespavost, nedostatek…) ve Vodítkách není —
-příloha 5 obsahuje nemoci, ne symptomy. Bude potřeba ho doplňovat.
-Totéž platí pro `tvrzeni.VZTAHOVA`: tvrzení naznačené bez slovesa
-(„Pro zdravé klouby“) kontrola mine.
+**3. Vlastní seznamy zůstávají mezerou**
+`tvrzeni.SYMPTOMY` i `tvrzeni.VZTAHOVA` jsou naše, ve Vodítkách takové
+výčty nejsou. Oficiální nepřípustná znění se už používají (viz 31), ale
+pokrývají jen 43 vět; co Vodítka nevypisují a co nespadne pod riziková
+slova, projde. Doplňovat podle nálezů z praxe.
 
 ---
 
@@ -173,11 +174,20 @@ o jitroceli vejčitém, jak ho seznam u slupek pojmenovává. Kontrola u té
 věty dál upozorní na vazbu na část rostliny — správně, protože potvrdit,
 že výrobek slupky obsahuje, může jen člověk.
 
+**32.** Kontrola používá oficiální nepřípustná znění z Vodítek. Otázka
+zněla, že seznam symptomů je vlastní výmysl — ukázalo se, že `nepripustne.json`
+se od začátku načítal a nikde nepoužíval: 43 konkrétních vět, které Vodítka
+vypisují jako nepoužitelné, každou i s důvodem. Shodovat se musí všechna
+významová slova, protože Vodítka rozlišují věty lišící se jediným slovem
+(„ochrana buněk před oxidativním *stresem*“ je schválená, „před oxidativním
+*poškozením*“ nepřípustná). Na katalogu je nálezů zatím nula, což odpovídá —
+je to síť na budoucí texty, ne na ty stávající.
+
 ---
 
 ## Vyřazeno ze zadání
 
-**32.** Doplňování z databáze prodspec — nahrazeno vlastními popisy
-**33.** Cloudový scraper — krátký popis je jen v HTML, JSON-LD ho nemá
-**34.** Fallback popisu z detailního textu — dával dávkování, výživové hodnoty
+**33.** Doplňování z databáze prodspec — nahrazeno vlastními popisy
+**34.** Cloudový scraper — krátký popis je jen v HTML, JSON-LD ho nemá
+**35.** Fallback popisu z detailního textu — dával dávkování, výživové hodnoty
 a doslovné „Popis produktu není dostupný“; použitelný byl 2krát z 19

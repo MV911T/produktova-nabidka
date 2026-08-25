@@ -205,3 +205,34 @@ def test_kmeny_odpovidaji_hledani_slova():
     kmeny, n = _kmeny(veta), veta.lower()
     for slovo in ("plynatost", "zánět", "léčit", "nadýmání"):
         assert _obsahuje(kmeny, n, slovo) == _obsahuje_slovo(veta, slovo), slovo
+
+
+NEPRIPUSTNA_ZNENI = [
+    ("Biotin zlepšuje stav vašich vlasů.", "silnější"),
+    ("Nedostatek zinku vede k poruchám imunity.", "poruch"),
+    ("Vitamin C přispívá k ochraně buněk před oxidativním poškozením.", "silnější"),
+    ("Hořčík zlepšuje funkci střev.", "silnější"),
+]
+
+
+@pytest.mark.parametrize(("popis", "cast_duvodu"), NEPRIPUSTNA_ZNENI)
+def test_zachyti_nepripustne_zneni_z_voditek(popis, cast_duvodu):
+    """Vodítka vedou 43 konkrétních vět, které použít nelze."""
+    nalezy = [n for n in zkontroluj(popis) if "nepřípustné tvrzení" in n]
+
+    assert nalezy, popis
+    assert any(cast_duvodu in n for n in nalezy), nalezy
+
+
+SCHVALENA_PODOBNA = [
+    # od nepřípustného znění se liší jediným slovem
+    "Vitamin C přispívá k ochraně buněk před oxidativním stresem.",
+    "Biotin přispívá k udržení normálního stavu vlasů.",
+    "Zinek přispívá k normální funkci imunitního systému.",
+]
+
+
+@pytest.mark.parametrize("popis", SCHVALENA_PODOBNA)
+def test_schvalene_zneni_se_za_nepripustne_nepovazuje(popis):
+    """„oxidativním stresem“ je schválené, „oxidativním poškozením“ ne."""
+    assert not [n for n in zkontroluj(popis) if "nepřípustné tvrzení" in n]
