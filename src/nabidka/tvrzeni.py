@@ -1,12 +1,18 @@
 """Kontrola krátkých popisů proti Vodítkům SZPI 2024.
 
 Podle čl. 10 nařízení (ES) č. 1924/2006 musí být každé tvrzení spojující
-potravinu se zdravím na schváleném seznamu. Modul hledá tři druhy prohřešků:
+potravinu se zdravím na schváleném seznamu. Modul hledá čtyři druhy prohřešků:
 
 1. riziková (léčebná) slova – příloha 5 Vodítek
 2. slovesa, která tvrzení zesilují nad schválené znění – příloha 6
 3. věty se zdravotním tématem bez opory ve schváleném, on-hold
    nebo výživovém tvrzení
+4. věty, jejichž jediná opora je vedená pro jinou část rostliny,
+   než jakou výrobek obsahuje
+
+Posuzují se jen věty, které účinek vyslovují: samotná zmínka o zdraví
+tvrzením není. Opora navíc musí platit pro touž látku – znění opsané
+od jiné živiny oporou není.
 
 Nenahrazuje posouzení člověkem, jen upozorňuje na nejčastější chyby.
 """
@@ -48,6 +54,22 @@ SYMPTOMY = [
 Pozor: tenhle výčet je vlastní, ve Vodítkách takový seznam není.
 """
 
+PRAH_SLOVNIKU = 2
+"""Kolik slov ze zdravotního slovníku musí věta obsahovat, než se posuzuje."""
+
+VZTAHOVA = [
+    "přispívá", "přispívají", "podílí", "pomáhá", "pomáhají", "podporuje",
+    "podporují", "napomáhá", "prospívá", "působí", "udržuje", "udržují",
+    "ovlivňuje", "snižuje", "snižují", "zmírňuje", "doplňuje", "dodává",
+    "je potřebný", "je nezbytný", "má vliv", "účinek", "účinky",
+]
+"""Slovesa, kterými věta spojuje látku se zdravím.
+
+Zdravotní tvrzení podle čl. 2 nařízení 1924/2006 musí vztah mezi potravinou
+a zdravím vyslovit. Věta „Vysoké koncentrace glycinu se nacházejí ve svalech“
+žádný účinek netvrdí – popisuje, kde se látka v těle vyskytuje.
+"""
+
 _KONCOVKY = {
     "", "a", "e", "i", "y", "u", "o", "ě", "í", "ý", "á", "é", "ů", "ou", "em",
     "im", "am", "om", "mi", "ch", "ech", "ich", "ám", "ým", "ých", "ové", "ový",
@@ -68,6 +90,13 @@ _NEVYZNAMNE = {
     "aminokyselin", "aminokyselina", "aminokyseliny", "bilkovin", "bilkoviny",
     "sacharid", "sacharidy", "vlaknina", "vlakniny", "vitamin", "vitaminu",
     "mineral", "mineraly", "extrakt", "extraktu", "polysacharid", "polysacharidu",
+    # slova, která se do slovníku dostala ze znění tvrzení, ale sama o zdraví
+    # nevypovídají – „ideální během tréninku“ zdravotní tvrzení není
+    "behem", "vysoce", "komfort", "zdroj", "latky", "kazdodenni", "trenink",
+    "treninku", "organismu", "organismus", "ideal", "idealni", "vyzivove",
+    "vyzivovy", "doplnek", "denni", "dennim", "davka", "forme", "forma",
+    "slozeni", "produkt", "pripravek", "vyrobek", "kvality", "kvalita",
+    "prirodni", "celkove", "dalsi",
 }
 
 
@@ -87,6 +116,84 @@ def _obsahuje_slovo(text: str, hledane: str) -> bool:
         token.startswith(cil) and token[len(cil):] in _KONCOVKY
         for token in re.findall(r"[a-zá-ž]+", _norm(text))
     )
+
+
+CASTI_ROSTLINY = {
+    "kořen": ("root", "kořen"),
+    "list": ("leaf", "leaves", "list"),
+    "semeno": ("seed", "seeds", "semeno", "semena"),
+    "plod": ("fruit", "plod"),
+    "květ": ("flower", "květ"),
+    "slupka": ("husk", "slupka"),
+    "nať": ("herb", "nať"),
+}
+"""Části rostliny, na které bývá on-hold tvrzení vázané.
+
+Čtvrtina záznamů některou uvádí a pak platí jen pro ni: „Duševní zdraví,
+stres & spánek“ je vedené pro kořen vitánie, ne pro extrakt z kořene i listů.
+"""
+
+
+def cast_rostliny(text: str) -> str:
+    """Část rostliny uvedená v záznamu, jinak prázdný řetězec."""
+    for nazev, slova in CASTI_ROSTLINY.items():
+        if any(_obsahuje_slovo(text, slovo) for slovo in slova):
+            return nazev
+    return ""
+
+
+_VYPLN = {
+    "prispiva", "prispivaji", "prispiv", "podili", "pomaha", "pomahaji",
+    "pomahat", "udrzeni", "udrzet", "udrzovat", "udrzovani", "normalni",
+    "normalniho", "normalnimu", "normalnich", "normalnim", "funkce", "funkci",
+    "funkcim", "cinnost", "cinnosti", "stavu", "potrebna", "potrebny",
+}
+"""Spojovací slova, kterými je psané skoro každé schválené tvrzení.
+
+Bez nich by „Ašvaganda přispívá k normální funkci jater“ vyšla jako
+podepřená tvrzením o cholinu – shodly by se na „přispívá“ a „normální“.
+"""
+
+
+_SPOJKY = {
+    "nebo", "anebo", "popr", "pripadne", "jine", "jiny", "ostatni", "vcetne",
+    "kategorie", "potravin", "potraviny", "potravina", "latka", "latky",
+}
+"""Slova, která v názvu látky nesou jen skladbu věty, ne její totožnost."""
+
+
+def _zminuje_latku(veta: str, latka: str) -> bool:
+    """Mluví věta o té látce, pro kterou je tvrzení schválené?
+
+    Bez téhle podmínky by „Kolagen přispívá k normální funkci imunitního
+    systému“ vyšla jako podepřená tvrzením o vitamínu C – shodly by se na
+    popisu účinku, ačkoli je schválený pro jinou látku.
+
+    Výživová tvrzení se k látce nevážou, u nich se nezkoumá.
+    """
+    if not latka:
+        return True
+
+    # záměrně se nefiltruje přes _NEVYZNAMNE: „vitamin“ je tam kvůli slovníku,
+    # jenže z názvu „vitamin A“ by pak nezbylo nic a kontrola by se přeskočila
+    nazvy = [
+        slovo for slovo in re.findall(r"[a-zá-ž0-9]+", _norm(latka))
+        if len(slovo) > 2 and slovo not in _SPOJKY
+    ]
+    return not nazvy or any(_obsahuje_slovo(veta, nazev) for nazev in nazvy)
+
+
+def _podepira(opora: str, n_veta: str) -> bool:
+    """Opírá se věta o tohle tvrzení?
+
+    Rozhodují jen slova nesoucí význam. Věcná shoda musí být aspoň ve dvou,
+    aby náhodné setkání jednoho slova za oporu neplatilo.
+    """
+    vyznamova = [
+        slovo for slovo in opora.split()
+        if len(slovo) > 4 and slovo not in _VYPLN
+    ]
+    return sum(1 for slovo in vyznamova if slovo in n_veta) >= 2
 
 
 def tvrzeni_pro(latka: str, limit: int = 15) -> dict[str, list[str]]:
@@ -153,22 +260,50 @@ def zkontroluj(popis: str, latky: list[str] | None = None) -> list[str]:
         if _obsahuje_slovo(popis, symptom):
             nalezy.append(f"symptom mimo schválená tvrzení: „{symptom}“")
 
-    opory = [radek[2] for radek in SCHVALENA_ZT if len(radek) > 2]
-    opory += [radek[1] for radek in SCHVALENA_VT if len(radek) > 1]
+    # opora je trojice (látka, znění, část rostliny). Prázdná látka znamená,
+    # že se název ve větě hledat nemá: u výživových tvrzení proto, že se
+    # k žádné látce nevážou, u on-hold proto, že si je vyžádal volající –
+    # a rostlina má jmen víc („ašvaganda“ = „indický ženšen“ = vitánie).
+    opory: list[tuple[str, str, str]] = [
+        (radek[1], _norm(radek[2]), "") for radek in SCHVALENA_ZT if len(radek) > 2
+    ]
+    opory += [("", _norm(radek[1]), "") for radek in SCHVALENA_VT if len(radek) > 1]
+
     for latka in latky or []:
-        opory += tvrzeni_pro(latka, limit=99)["on_hold"]
-    opory = [_norm(opora) for opora in opory]
+        hledane = _norm(latka)
+        for radek in ON_HOLD:
+            if hledane in _norm(radek["lat"]) or hledane in _norm(radek["cz"]):
+                opory.append((
+                    "",
+                    _norm(radek["tvrzeni"]),
+                    cast_rostliny(f"{radek['lat']} {radek['cz']}"),
+                ))
+
+    vztahova = VZTAHOVA + ZESILUJICI
 
     for veta in re.split(r"(?<=[.!?])\s+", popis):
-        if not any(_obsahuje_slovo(veta, slovo) for slovo in _SLOVNIK):
+        # jediné slovo ze slovníku větu o zdraví nedělá – „ideální během
+        # tréninku“ trefí „během“ a nic víc, proto se žádají aspoň dvě
+        if sum(1 for slovo in _SLOVNIK if _obsahuje_slovo(veta, slovo)) < PRAH_SLOVNIKU:
+            continue
+
+        # a bez vysloveného vztahu k účinku nejde o tvrzení, jen o popis
+        if not any(_obsahuje_slovo(veta, slovo) for slovo in vztahova):
             continue
 
         n_veta = _norm(veta)
-        podepreno = any(
-            sum(1 for slovo in opora.split() if len(slovo) > 4 and slovo in n_veta) >= 2
-            for opora in opory
-        )
-        if not podepreno:
+        casti = [
+            cast for latka_opory, opora, cast in opory
+            if _zminuje_latku(veta, latka_opory) and _podepira(opora, n_veta)
+        ]
+
+        if not casti:
             nalezy.append(f"zdravotní téma bez opory v seznamu: „{veta.strip()[:70]}…“")
+        elif all(casti):
+            vypis = ", ".join(sorted(set(casti)))
+            nalezy.append(
+                f"opora je vedená jen pro část rostliny ({vypis}) – ověřte, "
+                f"že ji produkt obsahuje: „{veta.strip()[:70]}…“"
+            )
 
     return nalezy

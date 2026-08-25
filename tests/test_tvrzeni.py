@@ -87,3 +87,74 @@ def test_latka_bez_tvrzeni():
         dostupna = tvrzeni_pro(latka)
         assert dostupna["schvalena"] == []
         assert dostupna["on_hold"] == []
+
+
+NEEXISTUJICI_OPORA = [
+    # znění je opsané ze schváleného tvrzení, ale pro jinou látku
+    "Kolagen přispívá k normální funkci imunitního systému.",
+    "Kreatin přispívá k normální činnosti štítné žlázy.",
+    "Spirulina přispívá k udržení normální hladiny cholesterolu v krvi.",
+    "Ašvaganda přispívá k normální funkci jater.",
+]
+
+
+@pytest.mark.parametrize("popis", NEEXISTUJICI_OPORA)
+def test_opora_musi_platit_pro_tutez_latku(popis):
+    """Schválené znění pro jinou látku oporou není.
+
+    Dřív stačilo, že se věta s tvrzením shodla na slovech „přispívá“
+    a „normální“ – tím prošlo cokoli napsaného ve tvaru schváleného tvrzení.
+    """
+    assert any("bez opory" in nalez for nalez in zkontroluj(popis))
+
+
+SKUTECNA_TVRZENI = [
+    "Vitamin C přispívá k normální funkci imunitního systému.",
+    "Vitamín D přispívá k normální funkci imunitního systému.",
+    "Železo přispívá k normální tvorbě červených krvinek a hemoglobinu.",
+    "Zinek přispívá k udržení normální hladiny testosteronu v krvi.",
+]
+
+
+@pytest.mark.parametrize("popis", SKUTECNA_TVRZENI)
+def test_schvalene_tvrzeni_projde(popis):
+    assert zkontroluj(popis) == []
+
+
+POPISNE_VETY = [
+    "Neobsahuje žádné balastní látky (éčka).",
+    "Ideální během tréninku, dlouhých pracovních dnů nebo po saunování.",
+    "Adaptogenní bylina z ájurvédy, známá také jako indický ženšen.",
+    "Vysoké koncentrace glycinu se nacházejí ve svalech a kůži.",
+]
+
+
+@pytest.mark.parametrize("veta", POPISNE_VETY)
+def test_veta_bez_vysloveneho_ucinku_neni_tvrzeni(veta):
+    """Popis místa výskytu ani vhodné chvíle k užití tvrzením není."""
+    assert zkontroluj(veta) == []
+
+
+def test_upozorni_na_omezeni_castí_rostliny():
+    """On-hold pro semena neplatí pro výrobek ze slupek."""
+    popis = "Jitrocel indický přispívá k normální funkci trávicího traktu a střev."
+    nalezy = zkontroluj(popis, ["jitrocel"])
+
+    assert any("část rostliny" in nalez and "semeno" in nalez for nalez in nalezy)
+
+
+def test_tvrzeni_bez_omezeni_casti_neupozornuje():
+    """Vitánie má i tvrzení, která část rostliny neuvádějí."""
+    popis = "Ašvaganda přispívá k duševnímu zdraví a relaxaci."
+
+    assert zkontroluj(popis, ["withania"]) == []
+
+
+def test_rozpozna_cast_rostliny():
+    from nabidka.tvrzeni import cast_rostliny
+
+    assert cast_rostliny("Withania somnifera ROOT") == "kořen"
+    assert cast_rostliny("Jitrocel indický ( psyllium) - semena") == "semeno"
+    assert cast_rostliny("Indický ženšen (Vitánie)") == ""
+    # „plodnost“ není „plod“
+    assert cast_rostliny("Normální plodnost a reprodukce") == ""

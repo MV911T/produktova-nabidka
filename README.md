@@ -76,7 +76,7 @@ src/nabidka/
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
 nastroje/tabule.py  přehled úkolů z TODO.md
-tests/              56 testů, bez přístupu na síť
+tests/              71 testů, bez přístupu na síť
 ```
 
 ## Na co narazíte v datech
@@ -112,8 +112,15 @@ potravinu se zdravím na schváleném seznamu. Modul `tvrzeni` hlásí:
 
 1. **riziková (léčebná) slova** – příloha 5 Vodítek
 2. **zesilující slovesa** – formulace silnější než schválené znění, příloha 6
-3. **zdravotní téma bez opory** – věta se dotýká zdraví, ale neodpovídá
+3. **zdravotní téma bez opory** – věta účinek tvrdí, ale neodpovídá
    žádnému schválenému, on-hold ani výživovému tvrzení
+4. **opora jen pro jinou část rostliny** – tvrzení je vedené pro kořen,
+   semena či listy; ověřte, že je výrobek opravdu obsahuje
+
+Posuzují se jen věty, které vztah k účinku vyslovují — zmínka o zdraví
+sama tvrzením není. Opora musí platit pro touž látku: „Kolagen přispívá
+k normální funkci imunitního systému“ se o schválené znění pro vitamín C
+opřít nemůže, byť je napsané stejně.
 
 ```python
 from nabidka import tvrzeni_pro, zkontroluj
@@ -131,8 +138,12 @@ verze 2024, přílohy převedené do JSON v `src/nabidka/data/`.
 ### Omezení
 
 Seznam symptomů (`tvrzeni.SYMPTOMY`) je vlastní – ve Vodítkách takový výčet
-není. Nástroj posouzení člověkem nenahrazuje, jen upozorňuje na nejčastější
-prohřešky.
+není. Stejně tak seznam vztahových sloves (`tvrzeni.VZTAHOVA`): tvrzení
+naznačené bez slovesa („Pro zdravé klouby“) nástroj minout může.
+
+Na 165 popisech z e-shopu hlásí 26 vět bez opory, 3 zesilující slovesa,
+2 riziková slova a 2 symptomy. Nástroj posouzení člověkem nenahrazuje,
+jen upozorňuje na nejčastější prohřešky.
 
 ## Vývoj
 
