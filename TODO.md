@@ -35,7 +35,7 @@ najednou a výstup uložit.
 
 **3. Vlastní seznamy zůstávají mezerou**
 `tvrzeni.SYMPTOMY` i `tvrzeni.VZTAHOVA` jsou naše, ve Vodítkách takové
-výčty nejsou. Oficiální nepřípustná znění se už používají (viz 31), ale
+výčty nejsou. Oficiální nepřípustná znění se už používají (viz 32), ale
 pokrývají jen 43 vět; co Vodítka nevypisují a co nespadne pod riziková
 slova, projde. Doplňovat podle nálezů z praxe.
 
@@ -55,7 +55,7 @@ slova, projde. Doplňovat podle nálezů z praxe.
 ### Popisy a legislativa
 
 **10.** 14 vlastních popisů pro produkty, u nichž e-shop krátký popis nemá
-**11.** Kontrola tvrzení proti Vodítkům SZPI 2024 — tři vrstvy (dnes čtyři, viz 21):
+**11.** Kontrola tvrzení proti Vodítkům SZPI 2024 — tři vrstvy (dnes pět, viz 21 a 32):
 riziková léčebná slova, zesilující slovesa, zdravotní téma bez opory
 **12.** Vyhledávač schválených a on-hold tvrzení podle látky
 **13.** Chybějící popisy v kategoriích muži a ženy — psát se nemusel žádný.
