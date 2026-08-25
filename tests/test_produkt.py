@@ -1,5 +1,7 @@
 """Parsování produktové stránky."""
 
+import pytest
+
 from nabidka.produkt import drobeckova_navigace, je_produktova_stranka, kratky_popis, parsuj
 
 
@@ -43,6 +45,24 @@ def test_kratky_popis_bez_provozniho_sdeleni(produktova_stranka):
 
     assert "Vážení zákazníci" not in produkt["short_description"]
     assert "Děkujeme za pochopení" not in produkt["short_description"]
+
+
+SDELENI = [
+    "Vážení zákazníci, upozorňujeme na změnu složení.",
+    "Vážení zákazníci, vylepšili jsme složení Energy Magnesia® v aktivní formě!",
+    "Vážení zákazníci, opravdu?",
+    "Vážení zákazníci, sdělení bez tečky na konci",
+    "Děkujeme za pochopení!",
+]
+
+
+@pytest.mark.parametrize("sdeleni", SDELENI)
+def test_provozni_sdeleni_zmizi_at_konci_cimkoli(sdeleni):
+    """Vykřičníkem zakončená věta dřív v popisu zůstávala."""
+    stranka = f'<div class="p-short-description"><p>Popis výrobku. {sdeleni}</p></div>'
+    popis = kratky_popis(stranka, "")
+
+    assert popis == "Popis výrobku."
 
 
 def test_url_a_obrazek_jsou_absolutni(produktova_stranka):

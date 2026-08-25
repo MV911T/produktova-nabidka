@@ -17,10 +17,15 @@ Klíčem je URL produktu. Všechny texty prošly kontrolou v modulu `tvrzeni`.
 """
 
 BALAST = [
-    r"Vážení zákazníci[^.]*\.",
-    r"Děkujeme za pochopení\.",
+    r"Vážení zákazníci[^.!?]*[.!?]?",
+    r"Děkujeme za pochopení[.!?]?",
 ]
-"""Provozní sdělení, která e-shop míchá do krátkého popisu."""
+"""Provozní sdělení, která e-shop míchá do krátkého popisu.
+
+Věta smí končit tečkou, vykřičníkem, otazníkem i ničím: obě balení Energy
+Magnesia® mají na konci „Vážení zákazníci, vylepšili jsme složení… formě!“
+a s požadavkem na tečku tam ta věta zůstávala.
+"""
 
 
 def je_produktova_stranka(stranka: str) -> bool:
