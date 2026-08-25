@@ -259,3 +259,51 @@ def test_tvrzeni_nesene_jmenem_se_posoudi(popis):
 def test_popis_slozeni_jmenem_neprojde_jako_tvrzeni():
     """Samotné jméno bez zdravotního tématu tvrzení nedělá."""
     assert zkontroluj("Balení obsahuje 200 ml a vystačí na 20 dávek.") == []
+
+
+NEMOCI_Z_VODITEK = [
+    ("X snižuje riziko hypertenze.", "hypertenze"),
+    ("Nedostatek vitamínu A může vést k šerosleposti.", "šeroslepost"),
+    ("Pomáhá při dyslipidemii.", "dyslipidemie"),
+    ("Zmírňuje nervozitu.", "nervozita"),
+]
+
+
+@pytest.mark.parametrize(("popis", "slovo"), NEMOCI_Z_VODITEK)
+def test_nemoci_jmenovane_voditky_jsou_rizikove(popis, slovo):
+    """Vodítka je jmenují ve svých nepřípustných tvrzeních, příloha 5 je neměla."""
+    assert any(slovo in nalez for nalez in zkontroluj(popis)), popis
+
+
+def test_priznak_z_prilohy_5_se_nehlasi_dvakrat():
+    """Nespavost je mezi rizikovými slovy, mezi symptomy už být nemusí."""
+    nalezy = [n for n in zkontroluj("Pomáhá při nespavosti.") if "nespavost" in n]
+
+    assert len(nalezy) == 1, nalezy
+
+
+def test_symptomy_maji_uvedeny_puvod():
+    from nabidka.tvrzeni import SYMPTOMY, SYMPTOMY_VLASTNI, SYMPTOMY_Z_VODITEK
+
+    assert SYMPTOMY == SYMPTOMY_Z_VODITEK + SYMPTOMY_VLASTNI
+    assert not set(SYMPTOMY_Z_VODITEK) & set(SYMPTOMY_VLASTNI)
+
+
+def test_kratke_slovo_se_nezkracuje():
+    """Z „kolika“ by zbylo „kolik“ a chytalo by běžné věty.
+
+    Daň za to je, že se krátká slova trefí jen v tvarech s přílepkem:
+    „kolika“ ano, „kolice“ ne.
+    """
+    assert zkontroluj("Podle toho, kolik odměrek nasypete, namícháte nápoj.") == []
+    assert any("kolika" in n for n in zkontroluj("Přípravek pomáhá při kolika."))
+
+
+def test_dlouhe_slovo_se_trefi_i_ve_skloneni():
+    """U delších slov záměna koncové samohlásky funguje."""
+    for popis, slovo in (
+        ("Zmírňuje nervozitu.", "nervozita"),
+        ("Pomáhá při dyslipidemii.", "dyslipidemie"),
+        ("Používá se při anorexii.", "anorexie"),
+    ):
+        assert any(slovo in n for n in zkontroluj(popis)), popis

@@ -51,15 +51,30 @@ ZESILUJICI = [
 ]
 """Slovesa, kterými se schválené „přispívá k…“ mění na silnější tvrzení."""
 
-SYMPTOMY = [
-    "křeče", "křeč", "nespavost", "neklidný spánek", "nedostatek", "deficit",
-    "bolest", "nadýmání", "nafouklé břicho", "vypadávání", "lámavost",
-    "podrážděnost", "výkyvy nálad", "vyčerpaný", "unavený",
-]
-"""Symptomy, které schválená tvrzení neznají – naznačují léčebný účinek.
+SYMPTOMY_Z_VODITEK = ["nedostatek", "výkyvy nálad"]
+"""Příznaky, jejichž znění stojí ve Vodítkách.
 
-Pozor: tenhle výčet je vlastní, ve Vodítkách takový seznam není.
+„Nedostatek X vede k poruchám zraku“ i „jejíž narušení způsobuje poruchy
+a výkyvy nálad“ jsou mezi nepřípustnými tvrzeními doslova.
 """
+
+SYMPTOMY_VLASTNI = [
+    "křeče", "křeč", "neklidný spánek", "deficit", "nadýmání",
+    "nafouklé břicho", "lámavost", "podrážděnost", "vyčerpaný", "unavený",
+]
+"""Příznaky, které jsme doplnili sami.
+
+Příloha 5 Vodítek vypisuje nemoci, ne příznaky – to je mezera ve zdroji,
+ne v kódu. Výčet je proto vědomý a schválně krátký. Slova jako
+„soustředění“ nebo „nálada“ v něm nejsou: v popisech doplňků se běžně
+vyskytují v nezávadném významu a dělala by z kontroly generátor poplachů.
+
+`nespavost`, `bolest` a `vypadávání vlasů` tu nejsou proto, že je vede
+už příloha 5 mezi rizikovými slovy – hlásily by se dvakrát.
+"""
+
+SYMPTOMY = SYMPTOMY_Z_VODITEK + SYMPTOMY_VLASTNI
+"""Příznaky, které schválená tvrzení neznají – naznačují léčebný účinek."""
 
 PRAH_SLOVNIKU = 2
 """Kolik slov ze zdravotního slovníku musí věta obsahovat, než se posuzuje."""
@@ -122,14 +137,28 @@ def _norm(text: str) -> str:
     return "".join(znak for znak in text if unicodedata.category(znak) != "Mn")
 
 
+def _kmen_hledaneho(cil: str) -> str:
+    """Podoba, ve které se hledané slovo porovnává.
+
+    Slova zakončená samohláskou skloňují její záměnou, ne přílepkem:
+    „anorexie“ → „anorexií“, „nervozita“ → „nervozitu“. Porovnává se proto
+    tvar bez ní, jinak by se takové slovo trefilo jen v prvním pádu.
+
+    Krátké kmeny se nezkracují: z „kolika“ by zbylo „kolik“ a hlásila by se
+    věta „podle toho, kolik odměrek nasypete“.
+    """
+    return cil[:-1] if len(cil) > 6 and cil[-1] in "aeo" else cil
+
+
 def _obsahuje_slovo(text: str, hledane: str) -> bool:
     """Vyskytuje se slovo v textu jako samostatné slovo, i v jiném pádu?"""
     cil = _norm(hledane)
     if " " in cil:
         return cil in _norm(text)
 
+    kmen = _kmen_hledaneho(cil)
     return any(
-        token.startswith(cil) and token[len(cil):] in _KONCOVKY
+        token.startswith(kmen) and token[len(kmen):] in _KONCOVKY
         for token in re.findall(r"[a-zá-ž]+", _norm(text))
     )
 
@@ -218,7 +247,7 @@ def _kmeny(text: str) -> set[str]:
 def _obsahuje(kmeny: set[str], n_text: str, hledane: str) -> bool:
     """Totéž co `_obsahuje_slovo`, jen nad předpočítanými kmeny."""
     cil = _norm(hledane)
-    return cil in n_text if " " in cil else cil in kmeny
+    return cil in n_text if " " in cil else _kmen_hledaneho(cil) in kmeny
 
 
 def _podepira(opora: str, n_veta: str) -> bool:

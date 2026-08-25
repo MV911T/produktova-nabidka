@@ -92,7 +92,7 @@ src/nabidka/
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
 nastroje/tabule.py  přehled úkolů z TODO.md
-tests/              116 testů, bez přístupu na síť
+tests/              124 testů, bez přístupu na síť
 ```
 
 ## Na co narazíte v datech
@@ -190,8 +190,13 @@ verze 2024, přílohy převedené do JSON v `src/nabidka/data/`.
 
 ### Omezení
 
-Seznam symptomů (`tvrzeni.SYMPTOMY`) je vlastní – ve Vodítkách takový výčet
-není. Vlastní je i `tvrzeni.VZTAHOVA`, tedy výrazy, kterými věta vztah
+Příznaky jsou rozdělené podle původu: `SYMPTOMY_Z_VODITEK` mají znění
+doložené citací, `SYMPTOMY_VLASTNI` je náš doplněk o deseti položkách.
+Příloha 5 totiž vypisuje nemoci, ne příznaky – to je mezera ve zdroji.
+Slova jako „soustředění“ nebo „nálada“ v doplňku schválně nejsou: v popisech
+doplňků se běžně vyskytují v nezávadném významu.
+
+Vlastní je i `tvrzeni.VZTAHOVA`, tedy výrazy, kterými věta vztah
 k účinku vyslovuje. Původně to byla jen slovesa, jenže katalog má desítky
 vět typu „pro podporu normální hladiny cholesterolu“, které tvrzením jsou
 a nesou ho podstatným jménem; ta se do seznamu doplnila. Co v seznamu není,
@@ -203,8 +208,13 @@ oxidativním **stresem**“ je schválená, „před oxidativním **poškozením
 nepřípustná –, a volnější párování by ten rozdíl smazalo. Znění, které
 Vodítka nevypisují, tahle vrstva nenajde.
 
-Na 379 popisech z katalogu hlásí 154 vět bez opory, 10 zesilujících sloves,
-5 rizikových slov, 1 symptom a žádné nepřípustné znění. Nástroj posouzení člověkem nenahrazuje,
+Slovo se hledá i ve skloněném tvaru. U delších slov se porovnává kmen bez
+koncové samohlásky („anorexie“ trefí „anorexii“), u krátkých ne – z „kolika“
+by zbylo „kolik“ a hlásila by se věta „podle toho, kolik odměrek nasypete“.
+Krátká slova se proto trefí jen v tvarech s přílepkem.
+
+Na 379 popisech z katalogu hlásí 153 vět bez opory, 13 zesilujících sloves,
+9 rizikových slov, 1 symptom a žádné nepřípustné znění. Nástroj posouzení člověkem nenahrazuje,
 jen upozorňuje na nejčastější prohřešky.
 
 ## Vývoj
