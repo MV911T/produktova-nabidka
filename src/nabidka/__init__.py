@@ -56,11 +56,16 @@ def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
     Vynechává zrušené produkty (web je přesměruje na kategorii) a balíčky.
     Průběžné hlášky jdou na stderr, aby nekazily JSON na stdout.
 
+    Každý produkt je v nabídce jednou, i když na něj vede víc cest nebo
+    patří do víc kategorií; totožnost určuje microdata `url`. Do `category`
+    se propíše ta kategorie, ve které se produkt objevil první.
+
     Vyhodí `NeuplnaNabidka`, když se některou stránku nepodařilo stáhnout –
     kratší seznam by se od úplného nedal rozeznat. Nedostupný výpis celé
     kategorie propadne jako `requests.RequestException`.
     """
     videne_url: set[str] = set()
+    videne_produkty: set[str] = set()
     nabidka: list[dict[str, str]] = []
     nestazene: list[str] = []
 
@@ -91,6 +96,14 @@ def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
 
             if not produkt["product_url"]:
                 produkt["product_url"] = url_produktu
+
+            # Výpis vede na tentýž produkt i dvěma cestami – „…-kapsli“
+            # a „…-kapsli-2“ –, shodná je až microdata `url`. Rozhodne
+            # proto ona, ne adresa, po které jsme přišli.
+            if produkt["product_url"] in videne_produkty:
+                continue
+            videne_produkty.add(produkt["product_url"])
+
             nabidka.append(produkt)
 
     if nestazene:
