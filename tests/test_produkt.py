@@ -4,18 +4,24 @@ import pytest
 
 from nabidka.produkt import drobeckova_navigace, je_produktova_stranka, kratky_popis, parsuj
 
+ZADANI = ["product_name", "product_url", "short_description", "image_url", "category"]
+"""Pole, která žádá zadání – v jeho pořadí."""
 
-def test_parsuje_vsech_pet_poli(produktova_stranka):
+
+def test_parsuje_vsech_pet_poli_ze_zadani(produktova_stranka):
     produkt = parsuj(produktova_stranka, "Doplňky stravy")
 
-    assert set(produkt) == {
-        "product_name",
-        "product_url",
-        "short_description",
-        "image_url",
-        "category",
-    }
-    assert all(produkt.values()), "žádné pole nesmí zůstat prázdné"
+    assert list(produkt)[:5] == ZADANI, "zadání žádá tahle pole v tomhle pořadí"
+    assert all(produkt[pole] for pole in ZADANI), "žádné pole zadání nesmí zůstat prázdné"
+
+
+def test_pridava_stabilni_identifikatory(produktova_stranka):
+    """URL se s přejmenováním produktu mění, kód zboží ne."""
+    produkt = parsuj(produktova_stranka, "Doplňky stravy")
+
+    assert produkt["sku"]
+    assert produkt["ean"].isdigit(), "EAN je číselný kód"
+    assert len(produkt["ean"]) == 13
 
 
 def test_nazev_je_bez_podtitulku(produktova_stranka):

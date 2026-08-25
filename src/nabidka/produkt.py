@@ -74,11 +74,16 @@ def kratky_popis(stranka: str, oblast: str) -> str:
 
 
 def parsuj(stranka: str, kategorie: str) -> dict[str, str]:
-    """Pět polí produktu.
+    """Pět polí ze zadání a k nim `sku` a `ean`.
 
     Kategorie se předává zvenčí – na produktové stránce spolehlivá není,
-    zhruba třetina produktů má drobečkovou navigaci jen dvouúrovňovou
-    (`BrainMax® > Název`) a věcnou kategorii web u nich vůbec nevede.
+    u části produktů vede drobečková navigace jen ke značce a věcnou
+    kategorii web nenese vůbec.
+
+    `sku` a `ean` zadání nežádá, ale bez nich je jediným klíčem záznamu
+    URL, a ta se s přejmenováním produktu mění. U variantního zboží nese
+    `sku` příponu velikosti (`70423/XL`), takže určuje variantu; nadřazený
+    produkt má microdata `productID`.
     """
     oblast = _oblast_produktu(stranka)
     cesta = drobeckova_navigace(stranka)
@@ -90,4 +95,6 @@ def parsuj(stranka: str, kategorie: str) -> dict[str, str]:
         "short_description": VLASTNI_POPISY.get(url) or kratky_popis(stranka, oblast),
         "image_url": microdata(oblast, "image"),
         "category": kategorie,
+        "sku": microdata(oblast, "sku"),
+        "ean": microdata(oblast, "gtin13"),
     }

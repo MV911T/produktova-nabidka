@@ -51,7 +51,8 @@ def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
     """Stáhne produkty ze zadaných kategorií a vrátí je jako `list[dict]`.
 
     Každý slovník má pole `product_name`, `product_url`, `short_description`,
-    `image_url` a `category`.
+    `image_url` a `category` ze zadání, a k nim `sku` a `ean` jako stabilní
+    identifikátory – URL se s přejmenováním produktu mění, kód zboží ne.
 
     Vynechává zrušené produkty (web je přesměruje na kategorii) a balíčky.
     Průběžné hlášky jdou na stderr, aby nekazily JSON na stdout.
