@@ -76,7 +76,7 @@ src/nabidka/
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
 nastroje/tabule.py  přehled úkolů z TODO.md
-tests/              79 testů, bez přístupu na síť
+tests/              84 testů, bez přístupu na síť
 ```
 
 ## Na co narazíte v datech

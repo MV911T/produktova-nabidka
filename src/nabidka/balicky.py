@@ -19,7 +19,13 @@ Například „BrainMax Superhrdina“ nebo „BrainMax Mužské zdraví“. Sez
 ručně odsouhlasený a doplňuje se podle potřeby.
 """
 
-_KLICOVE_SLOVO = re.compile(r"\bbal[íi]če?k\w*\b|\bsada\b|\bpack\b", re.I)
+_KLICOVE_SLOVO = re.compile(r"\bbal[íi]če?k\w*\b|\bsada\b|\bpack\b|\bset\b", re.I)
+"""Slova, kterými e-shop sadu pojmenovává.
+
+`set` přibylo kvůli oděvním sadám („LAUF unisex cyklistický set, dres
+a kraťasy“) – dres i kraťasy se prodávají samostatně, takže jde o sadu
+stejně jako u „BrainMax sada Trénink“. V katalogu trefí jen je.
+"""
 
 _BALENI = re.compile(
     r"\d+\s*(?:\w+\s+){0,2}"
@@ -30,9 +36,16 @@ _BALENI = re.compile(
 _ZNACKA = re.compile(r"BrainMax|Performance", re.I)
 
 _MARKER_NA_STRANCE = re.compile(
-    r"Tento balíček|Bal[íi]ček obsahuje|Sada obsahuje|V balíčku (?:najdete|naleznete)",
+    r"Bal[íi]ček obsahuje|Sada obsahuje|V balíčku (?:najdete|naleznete)",
     re.I,
 )
+"""Věty, kterými stránka výčet sady uvozuje.
+
+Samotné „Tento balíček“ tu bylo taky, jenže se trefovalo do křížového
+prodeje – „Omega 3 skvěle doplní tento balíček“ vyřadilo z nabídky
+Bacopu Monnieri. V celém katalogu byl ten vzor jediným zásahem, a chybným.
+Marker proto musí uvozovat výčet, ne jen zmínit slovo.
+"""
 
 
 def je_balicek(nazev: str, stranka: str = "") -> bool:
