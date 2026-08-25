@@ -58,7 +58,8 @@ src/nabidka/
 ├── tvrzeni.py      kontrola proti Vodítkům SZPI
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
-tests/              44 testů, bez přístupu na síť
+nastroje/tabule.py  přehled úkolů z TODO.md
+tests/              50 testů, bez přístupu na síť
 ```
 
 ## Na co narazíte v datech
@@ -123,6 +124,10 @@ pip install -e ".[dev]"
 pytest
 ruff check .
 ```
+
+Stav úkolů vypíše `python3 nastroje/tabule.py`. Totéž po každé iteraci
+ukáže `Stop` hook v `~/.claude/settings.json`; repozitář si najde sám
+přes `git rev-parse`, takže mu přesun projektu nevadí.
 
 Testy běží proti uloženým výřezům skutečných stránek v `tests/podklady/`,
 takže nechodí na síť.
