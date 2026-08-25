@@ -81,9 +81,26 @@ tests/              79 testů, bez přístupu na síť
 
 ## Na co narazíte v datech
 
-**Kategorie není na produktu.** Zhruba třetina produktů má drobečkovou navigaci
-jen dvouúrovňovou (`BrainMax® > Název produktu`) – věcnou kategorii web u nich
-vůbec nevede. Proto se bere z nadpisu výpisu, ze kterého se produkt stahoval.
+**Kategorie se bere z výpisu, ne z produktu.** Produktová stránka vlastní
+kategorii nese: `itemprop="category"` je vyplněná vždy a obsahuje celou cestu.
+Použitelná ale není. Končí názvem produktu, takže věcná kategorie je až
+předposledním článkem – a ten u části produktů chybí:
+
+| Vzorek 55 produktů z doplňků stravy | |
+|---|---|
+| cesta `Úvodní stránka > BrainMax® > název` – kategorie žádná | 7 (13 %) |
+| věcná kategorie k dispozici | 48 (87 %) |
+| kolik různých kategorií to je | 36 |
+
+K tomu je to kategorie, kam produkt patří primárně, ne ta, o kterou jsme
+požádali: `FUELIX DRINK` se ve výpisu doplňků stravy hlásí do „Zdravá výživa
+a potraviny pro děti“. Kdyby o `category` rozhodovala, nabídka sestavená ze
+čtyř kategorií by se roztříštila do desítek hodnot a u 13 % produktů by místo
+kategorie stála značka.
+
+Nadpis výpisu je proti tomu vyplněný vždy, drží se toho, oč bylo požádáno,
+a při spojení víc kategorií zůstává srozumitelný. Produkt, který patří do
+víc kategorií, dostane tu, ve které se objevil první.
 
 **Název produktu je slepený.** `itemprop="name"` obsahuje název, podtitulek
 a u variant i nadpisy zákaznických dotazů. Čistý název je posledním prvkem
