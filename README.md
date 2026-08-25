@@ -36,6 +36,23 @@ nabidka --tvrzeni hořčík psyllium
 
 Průběžné hlášky jdou na stderr, na stdout je čistý JSON.
 
+Když se některou stránku nepodaří stáhnout ani na třetí pokus, je nabídka
+neúplná: `ziskej_nabidku()` vyhodí `NeuplnaNabidka` a příkaz skončí kódem 1,
+místo aby zkrácený seznam vydával za úplný. Výjimka nese v `nabidka` to, co
+se stáhnout povedlo, a v `nestazene` seznam URL, která se vzdala.
+
+```python
+from nabidka import NeuplnaNabidka, ziskej_nabidku
+
+try:
+    produkty = ziskej_nabidku(["https://www.brainmarket.cz/lauf/"])
+except NeuplnaNabidka as chyba:
+    produkty = chyba.nabidka        # co se stihlo
+    print(chyba.nestazene)          # a co chybí
+```
+
+Z příkazové řádky totéž svolí `--dovol-neuplnou`.
+
 ## Pole
 
 | Pole | Zdroj |
@@ -59,7 +76,7 @@ src/nabidka/
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
 nastroje/tabule.py  přehled úkolů z TODO.md
-tests/              50 testů, bez přístupu na síť
+tests/              56 testů, bez přístupu na síť
 ```
 
 ## Na co narazíte v datech

@@ -26,12 +26,43 @@ PAUZA_MEZI_DOTAZY = 0.3
 
 CASOVY_LIMIT = 30
 
+POKUSY = 3
+"""Kolikrát se stránka zkusí stáhnout, než se to vzdá."""
 
-def stahni(url: str) -> str:
-    """Stáhne stránku. Vyhodí `requests.RequestException`, když se to nepovede."""
-    odpoved = requests.get(url, headers=HEADERS, timeout=CASOVY_LIMIT)
-    odpoved.raise_for_status()
-    return odpoved.text
+PAUZA_PRI_CHYBE = 1.0
+"""Vteřiny po prvním neúspěchu. S každým dalším pokusem se násobí."""
+
+
+def _stoji_za_opakovani(chyba: requests.RequestException) -> bool:
+    """Opakovat má smysl u výpadku spojení a chyb na straně serveru.
+
+    Odpověď 4xx se opakováním nespraví – taková stránka prostě není.
+    """
+    odpoved = getattr(chyba, "response", None)
+    return odpoved is None or odpoved.status_code >= 500
+
+
+def stahni(url: str, pokusy: int = POKUSY) -> str:
+    """Stáhne stránku, dočasný výpadek zkusí znovu.
+
+    Vyhodí `requests.RequestException`, když neuspěje ani poslední pokus.
+    """
+    posledni: requests.RequestException
+
+    for pokus in range(1, pokusy + 1):
+        try:
+            odpoved = requests.get(url, headers=HEADERS, timeout=CASOVY_LIMIT)
+            odpoved.raise_for_status()
+            return odpoved.text
+        except requests.RequestException as chyba:
+            posledni = chyba
+            if not _stoji_za_opakovani(chyba):
+                break
+
+        if pokus < pokusy:
+            time.sleep(PAUZA_PRI_CHYBE * pokus)
+
+    raise posledni
 
 
 def pockej() -> None:

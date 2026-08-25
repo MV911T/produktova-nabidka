@@ -3,6 +3,10 @@
     nabidka https://www.brainmarket.cz/lauf/ > nabidka.json
     nabidka --kontrola "text popisu" --latka hořčík
     nabidka --tvrzeni hořčík psyllium
+
+Když se některou stránku nepodaří stáhnout, nabídka je neúplná a příkaz
+skončí chybou, aby zkrácený JSON nikdo omylem nepovažoval za úplný.
+Kdo si s neúplnou nabídkou vystačí, přidá `--dovol-neuplnou`.
 """
 
 from __future__ import annotations
@@ -11,12 +15,28 @@ import argparse
 import json
 import sys
 
-from . import __version__, ziskej_nabidku
+from . import NeuplnaNabidka, __version__, ziskej_nabidku
 from .tvrzeni import tvrzeni_pro, zkontroluj
 
 
 def _vypis_nabidku(argumenty: argparse.Namespace) -> int:
-    produkty = ziskej_nabidku(argumenty.kategorie)
+    try:
+        produkty = ziskej_nabidku(argumenty.kategorie)
+    except NeuplnaNabidka as chyba:
+        print(f"\nCHYBA: {chyba}", file=sys.stderr)
+        for url in chyba.nestazene:
+            print(f"   ✗ {url}", file=sys.stderr)
+
+        if not argumenty.dovol_neuplnou:
+            print("Zkuste to znovu, nebo přidejte --dovol-neuplnou.", file=sys.stderr)
+            return 1
+
+        produkty = chyba.nabidka
+        json.dump(produkty, sys.stdout, ensure_ascii=False, indent=2)
+        sys.stdout.write("\n")
+        print(f"\n{len(produkty)} produktů – NEÚPLNÁ NABÍDKA", file=sys.stderr)
+        return 0
+
     json.dump(produkty, sys.stdout, ensure_ascii=False, indent=2)
     sys.stdout.write("\n")
     print(f"\n{len(produkty)} produktů", file=sys.stderr)
@@ -67,6 +87,11 @@ def main(argv: list[str] | None = None) -> int:
         nargs="+",
         metavar="LÁTKA",
         help="vypíše dostupná tvrzení pro dané látky",
+    )
+    parser.add_argument(
+        "--dovol-neuplnou",
+        action="store_true",
+        help="vypsat nabídku i tehdy, když se něco nepodařilo stáhnout",
     )
     parser.add_argument("--version", action="version", version=f"nabidka {__version__}")
 

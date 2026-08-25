@@ -19,6 +19,7 @@ from .tvrzeni import tvrzeni_pro, zkontroluj
 
 __all__ = [
     "ziskej_nabidku",
+    "NeuplnaNabidka",
     "je_balicek",
     "nacti_kategorii",
     "parsuj",
@@ -26,7 +27,24 @@ __all__ = [
     "zkontroluj",
 ]
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
+
+
+class NeuplnaNabidka(RuntimeError):
+    """Některé stránky se nepovedlo stáhnout ani na poslední pokus.
+
+    Nese v `nabidka` to, co se stáhnout povedlo, a v `nestazene` seznam URL,
+    která se vzdala. Volající se tak může rozhodnout sám, ale kratší seznam
+    mlčky nedostane – výpadek sítě od zrušeného produktu nerozezná.
+    """
+
+    def __init__(self, nabidka: list[dict[str, str]], nestazene: list[str]) -> None:
+        self.nabidka = nabidka
+        self.nestazene = nestazene
+        super().__init__(
+            f"nabídka je NEÚPLNÁ – nestažené stránky: {len(nestazene)}, "
+            f"stažené produkty: {len(nabidka)}"
+        )
 
 
 def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
@@ -37,9 +55,14 @@ def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
 
     Vynechává zrušené produkty (web je přesměruje na kategorii) a balíčky.
     Průběžné hlášky jdou na stderr, aby nekazily JSON na stdout.
+
+    Vyhodí `NeuplnaNabidka`, když se některou stránku nepodařilo stáhnout –
+    kratší seznam by se od úplného nedal rozeznat. Nedostupný výpis celé
+    kategorie propadne jako `requests.RequestException`.
     """
     videne_url: set[str] = set()
     nabidka: list[dict[str, str]] = []
+    nestazene: list[str] = []
 
     for url_kategorie in kategorie:
         nazev, url_produktu_seznam = nacti_kategorii(url_kategorie)
@@ -54,6 +77,7 @@ def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
                 stranka = stahni(url_produktu)
             except requests.RequestException as chyba:
                 print(f"  ! nestaženo {url_produktu}: {chyba}", file=sys.stderr)
+                nestazene.append(url_produktu)
                 continue
 
             if not je_produktova_stranka(stranka):
@@ -68,5 +92,8 @@ def ziskej_nabidku(kategorie: list[str]) -> list[dict[str, str]]:
             if not produkt["product_url"]:
                 produkt["product_url"] = url_produktu
             nabidka.append(produkt)
+
+    if nestazene:
+        raise NeuplnaNabidka(nabidka, nestazene)
 
     return nabidka
