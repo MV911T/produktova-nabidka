@@ -50,8 +50,22 @@ def test_zachyti_zesilujici_sloveso():
 def test_zachyti_symptom():
     nalezy = zkontroluj("Vyčerpání a křeče ve svalech – za tím stojí nedostatek hořčíku.")
 
-    assert any("křeče" in nalez for nalez in nalezy)
+    assert any("křeč" in nalez for nalez in nalezy)
     assert any("nedostatek" in nalez for nalez in nalezy)
+
+
+def test_symptom_se_hlasi_jednou():
+    """Seznam vedl „křeč“ i „křeče“ – táž věta dostala dva nálezy."""
+    nalezy = [n for n in zkontroluj("Zmírňuje křeče v nohou.") if "křeč" in n]
+
+    assert len(nalezy) == 1, nalezy
+
+
+def test_rizikove_slovo_se_hlasi_jen_nejurcitejsi():
+    """Příloha 5 vede „infekce“ i „plísňové infekce“."""
+    nalezy = [n for n in zkontroluj("Léčí plísňové infekce.") if "infekce" in n]
+
+    assert nalezy == ["rizikové (léčebné) slovo: „plísňové infekce“"], nalezy
 
 
 def test_zachyti_tvrzeni_bez_opory():

@@ -92,7 +92,7 @@ src/nabidka/
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
 nastroje/tabule.py  přehled úkolů z TODO.md
-tests/              124 testů, bez přístupu na síť
+tests/              127 testů, bez přístupu na síť
 ```
 
 ## Na co narazíte v datech
@@ -214,8 +214,10 @@ by zbylo „kolik“ a hlásila by se věta „podle toho, kolik odměrek nasype
 Krátká slova se proto trefí jen v tvarech s přílepkem.
 
 Na 379 popisech z katalogu hlásí 153 vět bez opory, 13 zesilujících sloves,
-9 rizikových slov, 1 symptom a žádné nepřípustné znění. Nástroj posouzení člověkem nenahrazuje,
-jen upozorňuje na nejčastější prohřešky.
+9 rizikových slov, 1 symptom a žádné nepřípustné znění.
+
+Nástroj posouzení člověkem nenahrazuje, jen upozorňuje na nejčastější
+prohřešky.
 
 ## Vývoj
 

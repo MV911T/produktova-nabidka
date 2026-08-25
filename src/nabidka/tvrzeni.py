@@ -59,7 +59,7 @@ a výkyvy nálad“ jsou mezi nepřípustnými tvrzeními doslova.
 """
 
 SYMPTOMY_VLASTNI = [
-    "křeče", "křeč", "neklidný spánek", "deficit", "nadýmání",
+    "křeč", "neklidný spánek", "deficit", "nadýmání",
     "nafouklé břicho", "lámavost", "podrážděnost", "vyčerpaný", "unavený",
 ]
 """Příznaky, které jsme doplnili sami.
@@ -82,8 +82,8 @@ PRAH_SLOVNIKU = 2
 VZTAHOVA = [
     # slovesa
     "přispívá", "přispívají", "přispět", "podílí", "pomáhá", "pomáhají",
-    "podporuje", "podporují", "napomáhá", "napomáhají", "prospívá", "působí",
-    "udržuje", "udržují", "ovlivňuje", "snižuje", "snižují", "zmírňuje",
+    "podporuje", "napomáhá", "napomáhají", "prospívá", "působí",
+    "udržuje", "ovlivňuje", "snižuje", "zmírňuje",
     "doplňuje", "dodává", "je potřebný", "je nezbytný", "má vliv",
     # jméno místo slovesa – „pro podporu normální hladiny cholesterolu“
     "podpor", "ochran", "regenerac", "prospěšn",
@@ -400,9 +400,13 @@ def zkontroluj(popis: str, latky: list[str] | None = None) -> list[str]:
             ohlasene.add(slovo)
             nalezy.append(hlaska)
 
-        for slovo in RIZIKOVA_SLOVA:
-            if _obsahuje(kmeny, n_veta, slovo):
-                _ohlas(slovo, f"rizikové (léčebné) slovo: „{slovo}“")
+        # Příloha 5 vede vedle „nemoc“ i „Alzheimerova nemoc“. Obojí by se
+        # trefilo do téže věty, hlásí se proto jen ten určitější zásah.
+        trefy = [s for s in RIZIKOVA_SLOVA if _obsahuje(kmeny, n_veta, s)]
+        for slovo in trefy:
+            if any(jiny != slovo and _obsahuje_slovo(jiny, slovo) for jiny in trefy):
+                continue
+            _ohlas(slovo, f"rizikové (léčebné) slovo: „{slovo}“")
 
         for sloveso in ZESILUJICI:
             if _obsahuje(kmeny, n_veta, sloveso):

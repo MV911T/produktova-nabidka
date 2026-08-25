@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "produktova-nabidka"
-version = "1.0.0"
+version = "1.2.0"
 description = "Produktová nabídka z brainmarket.cz s kontrolou zdravotních tvrzení podle Vodítek SZPI"
 readme = "README.md"
 requires-python = ">=3.10"
