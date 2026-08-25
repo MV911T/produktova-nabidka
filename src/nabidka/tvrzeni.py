@@ -14,6 +14,12 @@ Posuzují se jen věty, které účinek vyslovují: samotná zmínka o zdraví
 tvrzením není. Opora navíc musí platit pro touž látku – znění opsané
 od jiné živiny oporou není.
 
+Slovo se hlásí jen tehdy, když ho nemá i tvrzení, o které se věta opírá.
+Schválená znění totiž sama používají „zvyšuje“ (kreatin, vitamín C)
+i „zlepšuje“ (laktáza), „plynatost“ stojí ve schváleném tvrzení pro
+aktivní uhlí a „DNA“ v tvrzení o zinku se bez diakritiky shoduje
+s rizikovým slovem „dna“.
+
 Nenahrazuje posouzení člověkem, jen upozorňuje na nejčastější chyby.
 """
 
@@ -183,17 +189,45 @@ def _zminuje_latku(veta: str, latka: str) -> bool:
     return not nazvy or any(_obsahuje_slovo(veta, nazev) for nazev in nazvy)
 
 
+def _kmeny(text: str) -> set[str]:
+    """Kmeny slov věty – co všechno mohlo být hledaným slovem.
+
+    Předpočítá se jednou za větu, aby se 230 rizikových slov nehledalo
+    každé zvlášť procházením textu.
+    """
+    kmeny: set[str] = set()
+    for token in re.findall(r"[a-zá-ž]+", _norm(text)):
+        for koncovka in _KONCOVKY:
+            if not koncovka:
+                kmeny.add(token)
+            elif token.endswith(koncovka):
+                kmeny.add(token[: -len(koncovka)])
+    return kmeny
+
+
+def _obsahuje(kmeny: set[str], n_text: str, hledane: str) -> bool:
+    """Totéž co `_obsahuje_slovo`, jen nad předpočítanými kmeny."""
+    cil = _norm(hledane)
+    return cil in n_text if " " in cil else cil in kmeny
+
+
 def _podepira(opora: str, n_veta: str) -> bool:
     """Opírá se věta o tohle tvrzení?
 
-    Rozhodují jen slova nesoucí význam. Věcná shoda musí být aspoň ve dvou,
-    aby náhodné setkání jednoho slova za oporu neplatilo.
+    Rozhodují jen slova nesoucí význam a musí se shodnout dvě, aby náhodné
+    setkání jednoho slova za oporu neplatilo. Krátká on-hold tvrzení jako
+    „Antioxidant“ nebo „Normální trávení“ ale víc než jedno významové slovo
+    nemají – u nich stačí to jediné, jinak by nemohla podepřít nic.
     """
     vyznamova = [
         slovo for slovo in opora.split()
         if len(slovo) > 4 and slovo not in _VYPLN
     ]
-    return sum(1 for slovo in vyznamova if slovo in n_veta) >= 2
+    if not vyznamova:
+        return False
+
+    prah = min(2, len(vyznamova))
+    return sum(1 for slovo in vyznamova if slovo in n_veta) >= prah
 
 
 def tvrzeni_pro(latka: str, limit: int = 15) -> dict[str, list[str]]:
@@ -240,30 +274,14 @@ def _zdravotni_slovnik() -> set[str]:
 _SLOVNIK = _zdravotni_slovnik()
 
 
-def zkontroluj(popis: str, latky: list[str] | None = None) -> list[str]:
-    """Nálezy v popisu. Prázdný seznam znamená, že popis prošel.
+def _sestav_opory(latky: list[str] | None) -> list[tuple[str, str, str]]:
+    """Opory jako trojice (látka, znění, část rostliny).
 
-    `latky` rozšiřují seznam přípustných opor o on-hold tvrzení pro
-    konkrétní rostliny – bez nich projdou jen schválená tvrzení.
+    Prázdná látka znamená, že se název ve větě hledat nemá: u výživových
+    tvrzení proto, že se k žádné látce nevážou, u on-hold proto, že si je
+    vyžádal volající – a rostlina má jmen víc („ašvaganda“ = „indický
+    ženšen“ = vitánie).
     """
-    nalezy = []
-
-    for slovo in RIZIKOVA_SLOVA:
-        if _obsahuje_slovo(popis, slovo):
-            nalezy.append(f"rizikové (léčebné) slovo: „{slovo}“")
-
-    for sloveso in ZESILUJICI:
-        if _obsahuje_slovo(popis, sloveso):
-            nalezy.append(f"zesilující sloveso: „{sloveso}“ – bude silnější než schválené znění")
-
-    for symptom in SYMPTOMY:
-        if _obsahuje_slovo(popis, symptom):
-            nalezy.append(f"symptom mimo schválená tvrzení: „{symptom}“")
-
-    # opora je trojice (látka, znění, část rostliny). Prázdná látka znamená,
-    # že se název ve větě hledat nemá: u výživových tvrzení proto, že se
-    # k žádné látce nevážou, u on-hold proto, že si je vyžádal volající –
-    # a rostlina má jmen víc („ašvaganda“ = „indický ženšen“ = vitánie).
     opory: list[tuple[str, str, str]] = [
         (radek[1], _norm(radek[2]), "") for radek in SCHVALENA_ZT if len(radek) > 2
     ]
@@ -278,25 +296,67 @@ def zkontroluj(popis: str, latky: list[str] | None = None) -> list[str]:
                     _norm(radek["tvrzeni"]),
                     cast_rostliny(f"{radek['lat']} {radek['cz']}"),
                 ))
+    return opory
 
-    vztahova = VZTAHOVA + ZESILUJICI
+
+def zkontroluj(popis: str, latky: list[str] | None = None) -> list[str]:
+    """Nálezy v popisu. Prázdný seznam znamená, že popis prošel.
+
+    `latky` rozšiřují seznam přípustných opor o on-hold tvrzení pro
+    konkrétní rostliny – bez nich projdou jen schválená tvrzení.
+
+    Slovo se hlásí jen tehdy, když ho nemá i tvrzení, o které se věta
+    opírá. Schválená znění totiž sama používají „zvyšuje“ (kreatin,
+    vitamín C) i „zlepšuje“ (laktáza), „plynatost“ stojí ve schváleném
+    tvrzení pro aktivní uhlí a „DNA“ v tvrzení o zinku se shoduje
+    s rizikovým slovem „dna“.
+    """
+    nalezy: list[str] = []
+    opory = _sestav_opory(latky)
+    ohlasene: set[str] = set()
 
     for veta in re.split(r"(?<=[.!?])\s+", popis):
+        n_veta = _norm(veta)
+        kmeny = _kmeny(veta)
+
+        podpurne = [
+            (znění, cast) for latka_opory, znění, cast in opory
+            if _zminuje_latku(veta, latka_opory) and _podepira(znění, n_veta)
+        ]
+
+        def _ohlas(slovo: str, hlaska: str, podpurne=podpurne) -> None:
+            if slovo in ohlasene:
+                return
+            if any(_obsahuje(_kmeny(o), o, slovo) for o, _ in podpurne):
+                return
+            ohlasene.add(slovo)
+            nalezy.append(hlaska)
+
+        for slovo in RIZIKOVA_SLOVA:
+            if _obsahuje(kmeny, n_veta, slovo):
+                _ohlas(slovo, f"rizikové (léčebné) slovo: „{slovo}“")
+
+        for sloveso in ZESILUJICI:
+            if _obsahuje(kmeny, n_veta, sloveso):
+                _ohlas(
+                    sloveso,
+                    f"zesilující sloveso: „{sloveso}“ – bude silnější než schválené znění",
+                )
+
+        for symptom in SYMPTOMY:
+            if _obsahuje(kmeny, n_veta, symptom):
+                _ohlas(symptom, f"symptom mimo schválená tvrzení: „{symptom}“")
+
         # jediné slovo ze slovníku větu o zdraví nedělá – „ideální během
         # tréninku“ trefí „během“ a nic víc, proto se žádají aspoň dvě
-        if sum(1 for slovo in _SLOVNIK if _obsahuje_slovo(veta, slovo)) < PRAH_SLOVNIKU:
+        if sum(1 for slovo in _SLOVNIK if slovo in kmeny) < PRAH_SLOVNIKU:
             continue
 
         # a bez vysloveného vztahu k účinku nejde o tvrzení, jen o popis
-        if not any(_obsahuje_slovo(veta, slovo) for slovo in vztahova):
+        if not any(_obsahuje(kmeny, n_veta, slovo) for slovo in VZTAHOVA + ZESILUJICI):
             continue
 
-        n_veta = _norm(veta)
-        casti = [
-            cast for latka_opory, opora, cast in opory
-            if _zminuje_latku(veta, latka_opory) and _podepira(opora, n_veta)
-        ]
-
+        casti = [cast for _, cast in podpurne]
         if not casti:
             nalezy.append(f"zdravotní téma bez opory v seznamu: „{veta.strip()[:70]}…“")
         elif all(casti):

@@ -55,6 +55,8 @@ Z příkazové řádky totéž svolí `--dovol-neuplnou`.
 
 ## Pole
 
+Pět polí ze zadání:
+
 | Pole | Zdroj |
 |---|---|
 | `product_name` | poslední prvek drobečkové navigace |
@@ -62,6 +64,19 @@ Z příkazové řádky totéž svolí `--dovol-neuplnou`.
 | `short_description` | blok `.p-short-description`, jinak vlastní popis |
 | `image_url` | microdata `image` |
 | `category` | nadpis výpisu, ze kterého se produkt stahoval |
+
+A k nim dva identifikátory navíc:
+
+| Pole | Zdroj |
+|---|---|
+| `sku` | microdata `sku` – kód zboží |
+| `ean` | microdata `gtin13` |
+
+Zadání je nežádá, ale bez nich je jediným klíčem záznamu URL – a ta se
+s přejmenováním produktu mění, takže by týž produkt vyšel při dalším běhu
+jako zmizelý a nově přidaný. U variantního zboží nese `sku` příponu
+velikosti (`70423/XL`), určuje tedy variantu; nadřazený produkt má
+microdata `productID`.
 
 ## Rozvržení
 
@@ -76,7 +91,7 @@ src/nabidka/
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
 nastroje/tabule.py  přehled úkolů z TODO.md
-tests/              84 testů, bez přístupu na síť
+tests/              95 testů, bez přístupu na síť
 ```
 
 ## Na co narazíte v datech
@@ -139,6 +154,12 @@ sama tvrzením není. Opora musí platit pro touž látku: „Kolagen přispív�
 k normální funkci imunitního systému“ se o schválené znění pro vitamín C
 opřít nemůže, byť je napsané stejně.
 
+Slovo se přitom hlásí jen tehdy, když ho nemá i tvrzení, o které se věta
+opírá. Schválená znění totiž sama používají „zvyšuje“ (kreatin, vitamín C)
+i „zlepšuje“ (laktáza), „plynatost“ stojí ve schváleném tvrzení pro aktivní
+uhlí a „DNA“ v tvrzení o zinku se bez diakritiky shoduje s rizikovým
+slovem „dna“.
+
 ```python
 from nabidka import tvrzeni_pro, zkontroluj
 
@@ -158,8 +179,8 @@ Seznam symptomů (`tvrzeni.SYMPTOMY`) je vlastní – ve Vodítkách takový vý
 není. Stejně tak seznam vztahových sloves (`tvrzeni.VZTAHOVA`): tvrzení
 naznačené bez slovesa („Pro zdravé klouby“) nástroj minout může.
 
-Na 165 popisech z e-shopu hlásí 26 vět bez opory, 3 zesilující slovesa,
-2 riziková slova a 2 symptomy. Nástroj posouzení člověkem nenahrazuje,
+Na 459 popisech z katalogu hlásí 117 vět bez opory, 11 zesilujících sloves,
+7 rizikových slov a 3 symptomy. Nástroj posouzení člověkem nenahrazuje,
 jen upozorňuje na nejčastější prohřešky.
 
 ## Vývoj

@@ -158,3 +158,50 @@ def test_rozpozna_cast_rostliny():
     assert cast_rostliny("Indický ženšen (Vitánie)") == ""
     # „plodnost“ není „plod“
     assert cast_rostliny("Normální plodnost a reprodukce") == ""
+
+
+SLOVO_MA_I_OPORA = [
+    # schválená znění sama používají slovesa ze seznamu zesilujících
+    "Kreatin zvyšuje fyzickou výkonnost při po sobě jdoucích krátkodobých "
+    "intervalech vysoce intenzivního fyzického výkonu.",
+    "Vitamin C zvyšuje vstřebávání železa.",
+    "Enzym laktáza zlepšuje trávení laktózy u osob, které laktózu špatně tráví.",
+    # „plynatost“ je rizikové slovo, ale i součást schváleného tvrzení
+    "Aktivní uhlí přispívá ke snižování nadměrné plynatosti po jídle.",
+    # „DNA“ se bez diakritiky shoduje s rizikovým slovem „dna“
+    "Zinek přispívá k normální syntéze DNA.",
+]
+
+
+@pytest.mark.parametrize("popis", SLOVO_MA_I_OPORA)
+def test_slovo_ktere_ma_i_opora_se_nehlasi(popis):
+    """Doslovné schválené tvrzení nesmí spadnout na vlastní slovník."""
+    assert zkontroluj(popis) == []
+
+
+SLOVO_BEZ_OPORY = [
+    ("Hořčík posiluje svaly.", "posiluje"),
+    ("Kolagen zvyšuje pružnost pokožky.", "zvyšuje"),
+    ("Spirulina chrání buňky před poškozením volnými radikály.", "poškození"),
+]
+
+
+@pytest.mark.parametrize(("popis", "slovo"), SLOVO_BEZ_OPORY)
+def test_slovo_bez_opory_se_hlasi(popis, slovo):
+    """Stejné sloveso v jiné větě oporu nemá a hlásit se musí."""
+    assert any(slovo in nalez for nalez in zkontroluj(popis))
+
+
+def test_kratke_on_hold_tvrzeni_podepira():
+    """„Normální trávení“ má jediné významové slovo – práh dvou ho vyřazoval."""
+    assert zkontroluj("Hořec žlutý přispívá k normálnímu trávení.", ["hořec"]) == []
+    assert zkontroluj("Hořec žlutý přispívá k normálnímu trávení.") != []
+
+
+def test_kmeny_odpovidaji_hledani_slova():
+    from nabidka.tvrzeni import _kmeny, _obsahuje, _obsahuje_slovo
+
+    veta = "Popis zmiňuje lecitinu, plynatosti a zánětů."
+    kmeny, n = _kmeny(veta), veta.lower()
+    for slovo in ("plynatost", "zánět", "léčit", "nadýmání"):
+        assert _obsahuje(kmeny, n, slovo) == _obsahuje_slovo(veta, slovo), slovo
