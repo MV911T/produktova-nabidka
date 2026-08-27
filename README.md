@@ -1,10 +1,13 @@
 # Produktová nabídka
 
-[![testy](https://github.com/MV911T/produktova-nabidka/actions/workflows/testy.yml/badge.svg)](https://github.com/MV911T/produktova-nabidka/actions/workflows/testy.yml)
+[![tests](https://github.com/MV911T/produktova-nabidka/actions/workflows/tests.yml/badge.svg)](https://github.com/MV911T/produktova-nabidka/actions/workflows/tests.yml)
 
 Stáhne produkty z vybraných kategorií brainmarket.cz a vrátí je jako `list[dict]`
 připravený k převodu do JSON. Součástí je kontrola krátkých popisů proti
 Vodítkům SZPI k zdravotním a výživovým tvrzením.
+
+Kód je psaný anglicky, texty pro uživatele — hlášky, nálezy kontroly
+i dokumentace — zůstávají české.
 
 ## Instalace
 
@@ -17,9 +20,9 @@ Jedinou závislostí je `requests`, zbytek je standardní knihovna.
 ## Použití
 
 ```python
-from nabidka import ziskej_nabidku
+from product_offer import build_offer
 
-produkty = ziskej_nabidku([
+products = build_offer([
     "https://www.brainmarket.cz/brainmax-doplnky-stravy/",
     "https://www.brainmarket.cz/lauf/",
 ])
@@ -37,18 +40,18 @@ nabidka --tvrzeni hořčík psyllium
 Průběžné hlášky jdou na stderr, na stdout je čistý JSON.
 
 Když se některou stránku nepodaří stáhnout ani na třetí pokus, je nabídka
-neúplná: `ziskej_nabidku()` vyhodí `NeuplnaNabidka` a příkaz skončí kódem 1,
-místo aby zkrácený seznam vydával za úplný. Výjimka nese v `nabidka` to, co
-se stáhnout povedlo, a v `nestazene` seznam URL, která se vzdala.
+neúplná: `build_offer()` vyhodí `IncompleteOffer` a příkaz skončí kódem 1,
+místo aby zkrácený seznam vydával za úplný. Výjimka nese v `offer` to, co
+se stáhnout povedlo, a v `failed_urls` seznam URL, která se vzdala.
 
 ```python
-from nabidka import NeuplnaNabidka, ziskej_nabidku
+from product_offer import IncompleteOffer, build_offer
 
 try:
-    produkty = ziskej_nabidku(["https://www.brainmarket.cz/lauf/"])
-except NeuplnaNabidka as chyba:
-    produkty = chyba.nabidka        # co se stihlo
-    print(chyba.nestazene)          # a co chybí
+    products = build_offer(["https://www.brainmarket.cz/lauf/"])
+except IncompleteOffer as error:
+    products = error.offer        # co se stihlo
+    print(error.failed_urls)      # a co chybí
 ```
 
 Z příkazové řádky totéž svolí `--dovol-neuplnou`.
@@ -81,19 +84,23 @@ microdata `productID`.
 ## Rozvržení
 
 ```
-src/nabidka/
-├── __init__.py     ziskej_nabidku() – hlavní vstupní bod
-├── stahovani.py    HTTP a práce s HTML
-├── katalog.py      výpisy kategorií a stránkování
-├── produkt.py      parsování pěti polí
-├── balicky.py      rozpoznání sad
-├── sortiment.py    vyřazení oblečení a kosmetiky
-├── tvrzeni.py      kontrola proti Vodítkům SZPI
+src/product_offer/
+├── __init__.py     build_offer() – hlavní vstupní bod
+├── fetching.py     HTTP a práce s HTML
+├── catalog.py      výpisy kategorií a stránkování
+├── product.py      parsování pěti polí
+├── bundles.py      rozpoznání sad
+├── assortment.py   vyřazení oblečení a kosmetiky
+├── claims.py       kontrola proti Vodítkům SZPI
 ├── cli.py          příkazová řádka
 └── data/           JSON zdroje
-nastroje/tabule.py  přehled úkolů z TODO.md
+tools/board.py      přehled úkolů z TODO.md
 tests/              127 testů, bez přístupu na síť
 ```
+
+Balíček se jmenuje `product_offer`, ale příkaz zůstává `nabidka` a jeho
+přepínače české — to je uživatelské rozhraní, které popisuje tenhle README.
+V kódu jim odpovídají anglické názvy (`--kontrola` → `args.description`).
 
 ## Na co narazíte v datech
 
@@ -135,7 +142,7 @@ ve výpisech je 91 oblečení, kosmetika nebo vybavení. Nabídka má obsahovat
 jen to, co se dává do pusy, takže se filtruje. Podle názvu to nejde:
 „Mandlový krém s kokosem“ je potravina a „Shower Gel“ ne. Rozhoduje větev,
 ve které produkt visí (`Oblečení a doplňky`, `Přírodní kosmetika`, `Domov`
-a jejich podvětve) – viz `sortiment.NEPOZIVATELNE_VETVE`.
+a jejich podvětve) – viz `assortment.INEDIBLE_BRANCHES`.
 
 Cíle jako „Pleť, vlasy, nehty“ mezi vyřazenými schválně nejsou, tam visí
 doplňky stravy. U produktů zavěšených rovnou pod značkou žádná větev není,
@@ -144,7 +151,7 @@ a na ty zbývá krátký výčet slov v názvu (`láhev`, `bidon`, `šejkr`).
 **Balíčky nejsou nijak označené.** V Shoptetu jsou vedené jako běžný produkt.
 Rozpoznávají se třemi signály – klíčové slovo v názvu, dva produkty s vlastním
 balením v názvu, věta „Tento balíček…“ na stránce – a co jim unikne, je
-v ručně odsouhlaseném `data/balicky_rucne.json`.
+v ručně odsouhlaseném `data/manual_bundles.json`.
 
 Znak `+` v názvu má přitom dva významy: složení jedné receptury
 (*Hořčík + Vitamín B6*) versus dva samostatné produkty
@@ -153,7 +160,7 @@ Znak `+` v názvu má přitom dva významy: složení jedné receptury
 ## Kontrola zdravotních tvrzení
 
 Podle čl. 10 nařízení (ES) č. 1924/2006 musí být každé tvrzení spojující
-potravinu se zdravím na schváleném seznamu. Modul `tvrzeni` hlásí:
+potravinu se zdravím na schváleném seznamu. Modul `claims` hlásí:
 
 1. **riziková (léčebná) slova** – příloha 5 Vodítek
 2. **zesilující slovesa** – formulace silnější než schválené znění, příloha 6
@@ -176,27 +183,27 @@ uhlí a „DNA“ v tvrzení o zinku se bez diakritiky shoduje s rizikovým
 slovem „dna“.
 
 ```python
-from nabidka import tvrzeni_pro, zkontroluj
+from product_offer import check, claims_for
 
-zkontroluj("Hořčík posiluje svaly.", ["hořčík"])
+check("Hořčík posiluje svaly.", ["hořčík"])
 # ['zesilující sloveso: „posiluje“ – bude silnější než schválené znění', ...]
 
-tvrzeni_pro("psyllium")["on_hold"]
+claims_for("psyllium")["on_hold"]
 # ['Jitrocel indický ( psyllium) - semena → Normální funkce trávicího traktu a střev', ...]
 ```
 
 Zdroj dat: [Vodítka SZPI k problematice zdravotních a výživových tvrzení](https://www.szpi.gov.cz/clanek/voditka-k-problematice-zdravotnich-a-vyzivovych-tvrzeni.aspx),
-verze 2024, přílohy převedené do JSON v `src/nabidka/data/`.
+verze 2024, přílohy převedené do JSON v `src/product_offer/data/`.
 
 ### Omezení
 
-Příznaky jsou rozdělené podle původu: `SYMPTOMY_Z_VODITEK` mají znění
-doložené citací, `SYMPTOMY_VLASTNI` je náš doplněk o deseti položkách.
+Příznaky jsou rozdělené podle původu: `SYMPTOMS_FROM_GUIDELINES` mají znění
+doložené citací, `SYMPTOMS_OWN` je náš doplněk o deseti položkách.
 Příloha 5 totiž vypisuje nemoci, ne příznaky – to je mezera ve zdroji.
 Slova jako „soustředění“ nebo „nálada“ v doplňku schválně nejsou: v popisech
 doplňků se běžně vyskytují v nezávadném významu.
 
-Vlastní je i `tvrzeni.VZTAHOVA`, tedy výrazy, kterými věta vztah
+Vlastní je i `claims.RELATIONAL`, tedy výrazy, kterými věta vztah
 k účinku vyslovuje. Původně to byla jen slovesa, jenže katalog má desítky
 vět typu „pro podporu normální hladiny cholesterolu“, které tvrzením jsou
 a nesou ho podstatným jménem; ta se do seznamu doplnila. Co v seznamu není,
@@ -227,9 +234,9 @@ pytest
 ruff check .
 ```
 
-Stav úkolů vypíše `python3 nastroje/tabule.py`. Totéž po každé iteraci
+Stav úkolů vypíše `python3 tools/board.py`. Totéž po každé iteraci
 ukáže `Stop` hook v `~/.claude/settings.json`; repozitář si najde sám
 přes `git rev-parse`, takže mu přesun projektu nevadí.
 
-Testy běží proti uloženým výřezům skutečných stránek v `tests/podklady/`,
+Testy běží proti uloženým výřezům skutečných stránek v `tests/fixtures/`,
 takže nechodí na síť.

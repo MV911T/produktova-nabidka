@@ -9,8 +9,8 @@ venv/
 .pytest_cache/
 .ruff_cache/
 
-# stažené stránky a výstupy běhů
+# downloaded pages and run outputs
 *.html
-!tests/podklady/*.html
+!tests/fixtures/*.html
 nabidka.json
 *.err

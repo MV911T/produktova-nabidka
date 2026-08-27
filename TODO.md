@@ -1,8 +1,8 @@
 # TODO
 
-**0 zbývá · 33 hotovo · 3 vyřazeno**
+**0 zbývá · 34 hotovo · 3 vyřazeno**
 
-Poslední změna: 25. 8. 2026
+Poslední změna: 27. 8. 2026
 
 ---
 
@@ -39,13 +39,13 @@ a ten vlastní popis už má. Žádné prázdné pole, 10 balíčků vyřazeno.
 **12.** Hlášky na stderr místo do JSON výstupu
 **13.** Rozdělení do modulů, `pyproject.toml`, CLI, GitHub Actions
 **14.** 79 testů bez přístupu na síť, `ruff` bez nálezů
-**15.** Tabule úkolů po každé iteraci — `nastroje/tabule.py` a `Stop` hook.
+**15.** Tabule úkolů po každé iteraci — `tools/board.py` a `Stop` hook.
 Předchozí hook měl natvrdo cestu na původní umístění projektu, a proto
 po přesunu nikdy nevystřelil. Nový si repozitář najde přes `git rev-parse`,
 takže přesun ani další klon už mu nevadí, a jinde než tady mlčí.
 **16.** Neúplná nabídka se pozná. Stahování opakuje pokus u výpadku spojení
 a chyb 5xx (4xx ne, ta se opakováním nespraví), a co se ani napotřetí
-nestáhne, propadne jako `NeuplnaNabidka` s dosud staženými produkty
+nestáhne, propadne jako `IncompleteOffer` s dosud staženými produkty
 a seznamem zbylých URL. CLI zkrácený JSON nevypíše a skončí kódem 1,
 dokud nedostane `--dovol-neuplnou`.
 
@@ -146,7 +146,7 @@ věty dál upozorní na vazbu na část rostliny — správně, protože potvrdi
 že výrobek slupky obsahuje, může jen člověk.
 
 **29.** Kontrola používá oficiální nepřípustná znění z Vodítek. Otázka
-zněla, že seznam symptomů je vlastní výmysl — ukázalo se, že `nepripustne.json`
+zněla, že seznam symptomů je vlastní výmysl — ukázalo se, že `prohibited_claims.json`
 se od začátku načítal a nikde nepoužíval: 43 konkrétních vět, které Vodítka
 vypisují jako nepoužitelné, každou i s důvodem. Shodovat se musí všechna
 významová slova, protože Vodítka rozlišují věty lišící se jediným slovem
@@ -157,14 +157,14 @@ je to síť na budoucí texty, ne na ty stávající.
 **30.** Vztah k účinku se pozná i bez slovesa. Brána na slovesa míjela
 věty typu „pro podporu normální hladiny cholesterolu“ nebo „Podpora
 odolnosti a fyzické výkonnosti“ — tvrzení, která vztah nesou podstatným
-jménem. Katalog jich měl 60. Do `VZTAHOVA` proto přibyly kmeny `podpor`,
+jménem. Katalog jich měl 60. Do `RELATIONAL` proto přibyly kmeny `podpor`,
 `ochran`, `regenerac` a tvary `posílení`, `zvýšení`, `udržení`, `přispět`,
 `napomáhají`. Vět k posouzení přibylo ze 111 na 154 a jsou to skutečná
 tvrzení: „podporuje pevnou pokožku, krásné vlasy a zdravé klouby“,
 „pro podporu imunity“, „chrání buňky před oxidačním stresem“.
 
-**31.** Seznam příznaků má doložený původ. Rozdělil se na `SYMPTOMY_Z_VODITEK`
-(znění doložené citací) a `SYMPTOMY_VLASTNI` (deset položek, náš vědomý
+**31.** Seznam příznaků má doložený původ. Rozdělil se na `SYMPTOMS_FROM_GUIDELINES`
+(znění doložené citací) a `SYMPTOMS_OWN` (deset položek, náš vědomý
 doplněk), takže je v kódu vidět, co o co stojí. `nespavost`, `bolest`
 a `vypadávání vlasů` z něj zmizely — vede je příloha 5, hlásily by se
 dvakrát. Do rizikových slov přibyly čtyři nemoci, které Vodítka jmenují ve
@@ -200,11 +200,21 @@ v nabídce pod doplňky stravy, protože ta kategorie byla na řádce první.
 Z lifestylových kategorií zbylo 16 produktů, které v hlavní nejsou —
 většinou proteiny vedené pod muži, ženami a LAUF.
 
+**34.** Kód přepsaný do angličtiny. Balíček `nabidka` se jmenuje
+`product_offer`, moduly `stahovani`/`katalog`/`produkt`/`balicky`/`sortiment`/
+`tvrzeni` nesou názvy `fetching`/`catalog`/`product`/`bundles`/`assortment`/
+`claims` a stejně tak funkce, konstanty, klíče datových JSONů i komentáře.
+České zůstalo to, co čte člověk: hlášky CLI, texty nálezů, obsah datových
+souborů a dokumentace. Uživatelské rozhraní se nezměnilo — příkaz je pořád
+`nabidka` a jeho přepínače české, jen jim v kódu odpovídají anglické názvy
+(`--kontrola` → `args.description`). Verze povyskočila na 2.0.0, protože
+`from nabidka import ziskej_nabidku` už neexistuje.
+
 ---
 
 ## Vyřazeno ze zadání
 
-**34.** Doplňování z databáze prodspec — nahrazeno vlastními popisy
-**35.** Cloudový scraper — krátký popis je jen v HTML, JSON-LD ho nemá
-**36.** Fallback popisu z detailního textu — dával dávkování, výživové hodnoty
+**35.** Doplňování z databáze prodspec — nahrazeno vlastními popisy
+**36.** Cloudový scraper — krátký popis je jen v HTML, JSON-LD ho nemá
+**37.** Fallback popisu z detailního textu — dával dávkování, výživové hodnoty
 a doslovné „Popis produktu není dostupný“; použitelný byl 2krát z 19

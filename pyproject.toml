@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "produktova-nabidka"
-version = "1.2.0"
+version = "2.0.0"
 description = "Produktová nabídka z brainmarket.cz s kontrolou zdravotních tvrzení podle Vodítek SZPI"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -18,13 +18,13 @@ dependencies = ["requests>=2.31"]
 dev = ["pytest>=8.0", "ruff>=0.6"]
 
 [project.scripts]
-nabidka = "nabidka.cli:main"
+nabidka = "product_offer.cli:main"
 
 [project.urls]
 Repository = "https://github.com/MV911T/produktova-nabidka"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/nabidka"]
+packages = ["src/product_offer"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
